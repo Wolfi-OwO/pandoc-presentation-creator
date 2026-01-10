@@ -27,4 +27,4 @@ pandoc -d defaults/revealjs.yaml examples/minimal.md
 
 ---
 
-# Vielen Dank!
+# Vielen Dank

@@ -1,0 +1,124 @@
+---
+# Beamer Theme Settings
+theme: Singapore
+colortheme: seahorse
+
+# Include custom footer template
+header-includes: |
+  \input{includes/beamer-footer.tex}
+---
+
+# Willkommen
+
+## Oracle Performance Tuning
+
+Eine Einführung in:
+
+- Indexierungstechniken
+- Optimierungsmethoden
+- Best Practices
+
+---
+
+# Grundlagen
+
+## Was ist Performance Tuning?
+
+> Performance Tuning ist der Prozess, eine Datenbank und deren Abfragen zu optimieren, um schnellere Antwortzeiten und bessere Ressourcennutzung zu erreichen.
+
+### Hauptziele
+
+1. **Reduzierung der Query-Ausführungszeit**
+2. **Minimierung des Speicherverbrauchs**
+3. **Optimale CPU-Auslastung**
+4. **Verbesserung der Benutzer-Erfahrung**
+
+---
+
+# Indexierungstechniken
+
+## Index-Typen in Oracle
+
+| Typ | Beschreibung | Anwendungsfall |
+|-----|-------------|---|
+| **B-Tree** | Standardindex | Gleichheit und Range-Abfragen |
+| **Bitmap** | Wenige distinct Werte | Low-Cardinality Spalten |
+| **Hash** | Schnelle Lookups | Nur Gleichheit |
+| **Composite** | Mehrere Spalten | Komplexe Bedingungen |
+
+---
+
+## Index-Strategie
+
+::: incremental
+
+- Indizes auf Spalten mit WHERE-Bedingungen
+- Foreign Keys indizieren
+- Composite Indizes für häufige Kombinationen
+- Nicht zu viele Indizes pro Tabelle
+- Regelmäßig defragmentieren
+:::
+
+---
+
+# Optimierungsmethoden
+
+## Query Optimization
+
+```sql
+-- Schlecht: Full Table Scan
+SELECT * FROM employees 
+WHERE salary > 50000;
+
+-- Besser: Mit Index
+CREATE INDEX idx_salary ON employees(salary);
+SELECT employee_id, name FROM employees 
+WHERE salary > 50000;
+```
+
+---
+
+## Execution Plan Analyse
+
+- `EXPLAIN PLAN FOR` nutzen
+- Autotrace aktivieren
+- Plan-Hash überprüfen
+- Statistics aktuell halten
+
+---
+
+# Praktische Tipps
+
+## Best Practices
+
+1. **Monitoring**: AWR Reports regelmäßig überprüfen
+2. **Statistiken**: `ANALYZE TABLE` oder `DBMS_STATS.GATHER_TABLE_STATS`
+3. **Partitionierung**: Bei großen Tabellen erwägen
+4. **Hints**: Nur als letztes Mittel nutzen
+
+::: notes
+Diese Punkte sind essentiell für eine stabile und schnelle Datenbank.
+Regelmäßige Wartung ist wichtiger als spontane Optimierungen.
+:::
+
+---
+
+# Zusammenfassung
+
+## Wichtigste Erkenntnisse
+
+- Indizes sind mächtig, aber nicht die Lösung für alles
+- Regelmäßiges Monitoring ist essentiell
+- Query-Analyse vor Optimierung
+- Dokumentation und Versionierung
+
+---
+
+# Fragen?
+
+Kontakt: <koflerphillip@outlook.com>
+
+Weitere Ressourcen:
+
+- [Oracle Database Documentation](https://docs.oracle.com/)
+- [Oracle Tuning Guide](https://docs.oracle.com/en/database/oracle/oracle-database/21/tgsql/)

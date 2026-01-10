@@ -2,8 +2,16 @@
 # Pandoc Defaults für Beamer (LaTeX) Präsentationen
 # ==============================================================================
 # Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen.
-# Sie kann mit: pandoc -d defaults/beamer.yaml input.md -o output.pdf
-# aufgerufen werden.
+# Metadaten können aus separaten YAML-Dateien eingebunden werden:
+# pandoc -d defaults/beamer.yaml --metadata-file metadata/oracle-tuning.yaml input.md -o output.pdf
+
+# oder direkt in den Markdown YAML-Header:
+# pandoc -d defaults/beamer.yaml input.md -o output.pdf
+
+# Beispiele:
+# 1. Mit Defaults nur: pandoc -d defaults/beamer.yaml examples/themed-presentation.md
+# 2. Mit Metadata-Datei: pandoc -d defaults/beamer.yaml --metadata-file metadata/oracle-tuning.yaml examples/themed-presentation.md
+# 3. Mit Pandoc-Docker: docker run --rm -v $(pwd):/data pandoc-beamer -d /pandoc/defaults/beamer.yaml --metadata-file /data/metadata/oracle-tuning.yaml /data/examples/themed-presentation.md -o /data/output/oracle.pdf
 
 # ------------------------------------------------------------------------------
 # Output-Konfiguration
@@ -50,10 +58,12 @@ variables:
   highlight-style: tango
 
 # ------------------------------------------------------------------------------
-# Metadata-Dateien
+# Metadata-Dateien (Basis)
 # ------------------------------------------------------------------------------
 metadata-files:
   - metadata/common.yaml
+
+# Zusätzliche Metadata-Dateien können mit --metadata-file Parameter hinzugefügt werden
 
 # ------------------------------------------------------------------------------
 # Filter

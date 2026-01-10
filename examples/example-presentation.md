@@ -21,14 +21,18 @@ Dies ist die erste Folie einer Beispiel-Präsentation, erstellt mit Pandoc.
 
 ::: columns
 :::: column
+
 ### Web
+
 - **Reveal.js**
 - Interaktive HTML-Präsentationen
 - Responsive Design
 ::::
 
 :::: column
+
 ### Dokumente
+
 - **Beamer** (PDF)
 - **PowerPoint** (PPTX)
 - Professional Look
@@ -126,6 +130,7 @@ $$
 Punkte werden nacheinander angezeigt:
 
 ::: incremental
+
 - Erster Punkt
 - Zweiter Punkt
 - Dritter Punkt
@@ -139,6 +144,7 @@ Dies ist eine Folie mit Speaker Notes.
 
 ::: notes
 Dies sind Notizen für den Sprecher:
+
 - Wichtigen Punkt betonen
 - Beispiel aus der Praxis nennen
 - Fragen des Publikums zulassen
@@ -166,15 +172,15 @@ Das Projekt kann leicht angepasst werden:
 
 ---
 
-## Danke!
+## Danke
 
 ### Fragen?
 
 **Kontakt:**  
-max.mustermann@example.com
+<max.mustermann@example.com>
 
 **Repository:**  
-https://gitlab.com/woofi4/public/pandoc-presentation-creator
+<https://gitlab.com/woofi4/public/pandoc-presentation-creator>
 
 ---
 

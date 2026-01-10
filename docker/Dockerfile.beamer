@@ -50,12 +50,16 @@ RUN apt-get update && \
     # Fonts
     texlive-fonts-recommended \
     texlive-fonts-extra \
+    lmodern \
+    cm-super \
     # XeLaTeX für bessere Schriftunterstützung
     texlive-xetex \
     # Zusätzliche Pakete für Präsentationen
     texlive-pictures \
-    # Für Grafiken
+    texlive-pstricks \
+    # Für Grafiken und Konvertierungen
     ghostscript \
+    imagemagick \
     # Für Lua-Filter
     lua5.3 \
     # Cleaning up

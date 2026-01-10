@@ -169,7 +169,7 @@ Das Script:
 ```bash
 # Mit Docker direkt
 docker run --rm -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
   -d /pandoc/defaults/revealjs.yaml examples/minimal.md -o output/test.html
 
 # Oder mit Build-Script
@@ -203,15 +203,251 @@ chmod +x setup.sh
 
 ---
 
+## Tutorial: Erste Präsentation erstellen
+
+Dieser Abschnitt zeigt Schritt-für-Schritt, wie Sie mit den GitLab Registry Images eine Präsentation erstellen.
+
+### Voraussetzungen
+
+- Docker installiert und laufend
+- Keine weiteren Abhängigkeiten erforderlich
+
+### Schritt 1: Arbeitsverzeichnis erstellen
+
+```bash
+# Neues Verzeichnis für Ihre Präsentation
+mkdir meine-präsentation
+cd meine-präsentation
+
+# Output-Verzeichnis anlegen
+mkdir output
+```
+
+### Schritt 2: Markdown-Datei erstellen
+
+Erstellen Sie eine Datei `slides.md` mit folgendem Inhalt:
+
+```markdown
+---
+title: "Meine erste Präsentation"
+author: "Ihr Name"
+date: "Januar 2026"
+---
+
+# Willkommen
+
+Dies ist meine erste Präsentation mit Pandoc!
+
+## Was ist Pandoc?
+
+- Universeller Dokumentenkonverter
+- Unterstützt viele Formate
+- Einfach zu verwenden
+
+## Vorteile
+
+- **Markdown**: Einfache Syntax
+- **Versionierung**: Mit Git nutzbar
+- **Automatisierung**: CI/CD-Integration
+
+# Demo
+
+## Code-Beispiele
+
+\```python
+def hello_world():
+    print("Hello, World!")
+\```
+
+## Danke!
+
+Fragen?
+```
+
+### Schritt 3: Image pullen
+
+```bash
+# Für HTML-Präsentationen (Reveal.js)
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest
+
+# ODER für PDF-Präsentationen (Beamer)
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest
+```
+
+### Schritt 4: Präsentation generieren
+
+#### Variante A: Reveal.js (HTML)
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
+  slides.md \
+  --to revealjs \
+  --standalone \
+  --output output/präsentation.html
+```
+
+Öffnen Sie `output/präsentation.html` in Ihrem Browser!
+
+#### Variante B: Beamer (PDF)
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
+  slides.md \
+  --to beamer \
+  --pdf-engine=xelatex \
+  --output output/präsentation.pdf
+```
+
+Öffnen Sie `output/präsentation.pdf` mit einem PDF-Viewer!
+
+### Schritt 5: Erweiterte Anpassungen (Optional)
+
+#### Mit Defaults-Datei
+
+Erstellen Sie `config.yaml`:
+
+```yaml
+to: revealjs
+standalone: true
+variables:
+  theme: solarized
+  transition: slide
+  slideNumber: true
+```
+
+Verwenden Sie die Config:
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
+  --defaults config.yaml \
+  slides.md \
+  -o output/präsentation.html
+```
+
+#### Mit CSS-Styling
+
+Erstellen Sie `custom.css`:
+
+```css
+.reveal h1 {
+  color: #2c3e50;
+  font-family: 'Arial', sans-serif;
+}
+
+.reveal section {
+  text-align: left;
+}
+```
+
+Einbinden:
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
+  slides.md \
+  --to revealjs \
+  --standalone \
+  --css custom.css \
+  -o output/präsentation.html
+```
+
+### Schritt 6: Zentrale Metadaten verwenden (Fortgeschritten)
+
+Für größere Projekte empfiehlt sich die Verwaltung von Metadaten in separaten YAML-Dateien.
+
+#### Metadaten-Datei erstellen
+
+Erstellen Sie `metadata/mein-projekt.yaml`:
+
+```yaml
+# Basis-Informationen
+title: "Meine Präsentation"
+subtitle: "Ein Beispiel für zentrale Metadaten"
+institute: "Meine Organisation"
+author:
+  - Max Mustermann
+  - Jane Doe
+
+# Dokumentation
+date: 2026-01-10
+lang: de-DE
+
+# Keywords
+keywords:
+  - Präsentation
+  - Pandoc
+  - Beispiel
+
+# Beamer-spezifisch
+theme: Singapore
+colortheme: seahorse
+```
+
+#### Mit Metadaten-Datei bauen
+
+```bash
+# Reveal.js mit Metadaten
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
+  -d /pandoc/defaults/revealjs.yaml \
+  --metadata-file /data/metadata/mein-projekt.yaml \
+  /data/slides.md \
+  --output /data/output/präsentation.html
+
+# Beamer mit Metadaten
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
+  -d /pandoc/defaults/beamer.yaml \
+  --metadata-file /data/metadata/mein-projekt.yaml \
+  /data/slides.md \
+  --output /data/output/präsentation.pdf
+```
+
+#### Markdown-Datei (vereinfacht)
+
+`slides.md` benötigt nun weniger Metadaten im YAML-Header:
+
+```markdown
+---
+# Optionale theme-Overrides (überschreiben Defaults)
+theme: Madrid
+colortheme: dolphin
+---
+
+# Willkommen
+
+Ihr Inhalt...
+```
+
+**Vorteil**: Metadaten sind zentral, können wiederverwendet und versioniert werden!
+
+### Tipps
+
+- **Automatisierung**: Erstellen Sie ein Shell-Script für wiederholte Builds
+- **Watch-Mode**: Nutzen Sie `entr` oder ähnliche Tools für Auto-Rebuild
+- **Versionierung**: Committen Sie nur `.md` und Config-Dateien, nicht die generierten Outputs
+- **CI/CD**: Nutzen Sie GitLab CI/CD für automatische Builds (siehe `.gitlab-ci.yml`)
+
+---
+
 ## Docker Images
 
 ### Image-Matrix
 
 | Image | GitLab Registry | Größe | Platform | Verwendung |
 |-------|-----------|-------|----------|------------|
-| **pandoc-base** | `registry.gitlab.com/woofi4/public/pandoc-presentation-base:latest` | ~40 MB | amd64, arm64 | Basis-Konvertierungen |
-| **pandoc-revealjs** | `registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest` | ~80 MB | amd64, arm64 | HTML-Präsentationen |
-| **pandoc-beamer** | `registry.gitlab.com/woofi4/public/pandoc-presentation-beamer:latest` | ~250 MB | amd64 | PDF-Präsentationen |
+| **pandoc-base** | `registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:latest` | ~40 MB | amd64, arm64 | Basis-Konvertierungen |
+| **pandoc-revealjs** | `registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest` | ~80 MB | amd64, arm64 | HTML-Präsentationen |
+| **pandoc-beamer** | `registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest` | ~250 MB | amd64 | PDF-Präsentationen |
 
 ### Image Tags
 
@@ -225,15 +461,15 @@ Jedes Image ist verfügbar mit:
 
 ```bash
 # Einzelnes Image
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest
 
 # Alle Images
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-base:latest
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-beamer:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest
 
 # Spezifische Version
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:v1.0.0
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:v1.0.0
 ```
 
 ### Images lokal bauen
@@ -476,7 +712,7 @@ Die grundlegendste Art, die Docker Images zu verwenden:
 # Einfache Verwendung
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
   -d /pandoc/defaults/revealjs.yaml \
   examples/minimal.md -o output/slides.html
 
@@ -484,7 +720,7 @@ docker run --rm \
 docker run --rm \
   -v $(pwd):/data \
   -u $(id -u):$(id -g) \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest \
   examples/example-presentation.md \
   --to revealjs \
   --standalone \
@@ -497,14 +733,14 @@ docker run --rm \
 # Standard Beamer-Präsentation
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-beamer:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
   -d /pandoc/defaults/beamer.yaml \
   examples/minimal.md -o output/slides.pdf
 
 # Mit XeLaTeX und custom Fonts
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-beamer:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
   examples/example-presentation.md \
   --to beamer \
   --pdf-engine=xelatex \
@@ -517,13 +753,13 @@ docker run --rm \
 # Markdown zu HTML
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-base:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:latest \
   examples/minimal.md -o output/simple.html
 
 # Mit vielen Optionen
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-base:latest \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:latest \
   --from markdown \
   --to html5 \
   --standalone \
@@ -631,9 +867,9 @@ Für maximale Bequemlichkeit:
 
 ```bash
 # In ~/.bashrc oder ~/.zshrc
-alias pandoc-base='docker run --rm -v $(pwd):/data registry.gitlab.com/woofi4/public/pandoc-presentation-base:latest'
-alias pandoc-revealjs='docker run --rm -v $(pwd):/data registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest'
-alias pandoc-beamer='docker run --rm -v $(pwd):/data registry.gitlab.com/woofi4/public/pandoc-presentation-beamer:latest'
+alias pandoc-base='docker run --rm -v $(pwd):/data registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:latest'
+alias pandoc-revealjs='docker run --rm -v $(pwd):/data registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest'
+alias pandoc-beamer='docker run --rm -v $(pwd):/data registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest'
 
 # Dann einfach:
 pandoc-revealjs -d /pandoc/defaults/revealjs.yaml slides.md -o output.html
@@ -732,12 +968,12 @@ Stages:
 # Repository → CI/CD → Pipelines → Pipeline auswählen
 
 # Images überprüfen
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-base:latest
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-beamer:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest
 
 # Image-Details
-docker inspect registry.gitlab.com/woofi4/public/pandoc-presentation-revealjs:latest
+docker inspect registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:latest
 ```
 
 #### Versionierung

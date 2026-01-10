@@ -1,0 +1,29 @@
+# ==============================================================================
+# Metadata für Oracle Performance Tuning Präsentation
+# ==============================================================================
+# Zentrale Metadaten für diese spezifische Präsentation
+
+# ------------------------------------------------------------------------------
+# Basis-Informationen
+# ------------------------------------------------------------------------------
+title: "Oracle Performance Tuning"
+subtitle: "Indexierungstechniken und Optimierungsmethoden"
+institute: "HTL Dornbirn"
+date: 19.01.2026
+
+# Autoren
+author:
+  - Kofler Phillip
+  - 5BHIF
+
+# Sprache
+lang: de-DE
+
+# Keywords für Suchmaschinen
+keywords:
+  - Oracle
+  - Database
+  - Performance
+  - Tuning
+  - Indexierung
+  - Optimierung

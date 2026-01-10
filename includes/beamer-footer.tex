@@ -1,0 +1,32 @@
+% ==============================================================================
+% Professionelle Beamer Footer Template
+% ==============================================================================
+% Moderne Footer-Leiste mit Institution, Titel und Seitennummern
+
+\setbeamertemplate{footline}{
+  \ifnum\insertframenumber>1
+    \leavevmode%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.5ex,left,right]{footline}%
+      \hspace*{0.5ex}%
+      {\tiny \insertshortinstitute}%
+      \hfill%
+      {\tiny \insertshorttitle}%
+      \hfill%
+      {\tiny \insertframenumber{}/\inserttotalframenumber}%
+      \hspace*{0.5ex}%
+    \end{beamercolorbox}%
+  \fi
+}
+
+% Navigationssymbole entfernen für cleanes Design
+\setbeamertemplate{navigation symbols}{}
+
+% Optional: Zusätzliche Styling-Optionen
+% Uncomment je nach Bedarf:
+
+% Zentrierte Titel
+% \setbeamertemplate{frametitle}[default][center]
+
+% Itemize-Symbole
+% \setbeamertemplate{itemize item}[circle]
+% \setbeamertemplate{itemize subitem}[triangle]
