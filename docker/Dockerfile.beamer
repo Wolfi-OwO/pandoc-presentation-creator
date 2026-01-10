@@ -80,6 +80,7 @@ RUN apt-get update && \
     python3 \
     python3-pip \
     python3-setuptools \
+    python3-yaml \
     make \
     patch \
     zip \
@@ -99,16 +100,6 @@ RUN apt-get update && \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install useful Python packages for pandoc filters
-RUN pip3 install --no-cache-dir \
-    pyyaml \
-    click
-
-# Install optional Java for PlantUML support (can be commented out if not needed)
-# RUN apt-get update && \
-#     apt-get install -y --no-install-recommends openjdk21-jre && \
-#     rm -rf /var/lib/apt/lists/*
 
 # Erstelle non-root User
 RUN groupadd -g 1000 pandoc && \

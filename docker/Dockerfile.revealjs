@@ -94,17 +94,13 @@ RUN apk add --no-cache \
     py3-pip \
     py3-setuptools \
     py3-yaml \
+    py3-click \
     # JavaScript and Node support
     npm \
     nodejs \
     # Development tools
     build-base \
     openssl-dev
-
-# Install useful Python packages for pandoc filters
-RUN pip3 install --no-cache-dir \
-    pyyaml \
-    click
 
 # Erstelle non-root User
 RUN addgroup -g 1000 pandoc && \
