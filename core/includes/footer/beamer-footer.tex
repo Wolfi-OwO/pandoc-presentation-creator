@@ -1,44 +1,21 @@
 % ==============================================================================
-% Professionelle Beamer Footer Template
+% Beamer Footer: Date | Middle | Page Number (16:9 Format)
 % ==============================================================================
-% Moderne Footer-Leiste mit Institution, Titel und Seitennummern
-% Improved visibility with better spacing and contrast
 
-% Ensure footer line is visible
-\setbeamercolor{footline}{bg=structure!5!white, fg=structure!50!black}
+\setbeamercolor{footline}{bg=white, fg=black}
 \setbeamerfont{footline}{size=\scriptsize}
 
 \setbeamertemplate{footline}{
   \ifnum\insertframenumber>1
-    \begin{beamercolorbox}[colsep=1.5pt]{upper separation line foot}
-    \end{beamercolorbox}
-    \begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm plus1fil]{footline}%
-      {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertshortinstitute}%
+    \begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm]{footline}%
+      {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertdate}%
       \hfill%
-      {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertshorttitle}%
+      %
       \hfill%
-      {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertframenumber{}/\inserttotalframenumber}%
+      {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertframenumber}
     \end{beamercolorbox}%
-    \begin{beamercolorbox}[colsep=1.5pt]{lower separation line foot}
-    \end{beamercolorbox}
   \fi
 }
 
-% Navigationssymbole entfernen für cleanes Design
+% Remove navigation symbols
 \setbeamertemplate{navigation symbols}{}
-
-% Better margin and spacing for footer
-\setbeamertemplate{frametitle}[default][left]
-
-% Ensure proper text sizing
-\usefonttheme{structurebold}
-
-% Optional: Zusätzliche Styling-Optionen
-% Uncomment je nach Bedarf:
-
-% Zentrierte Titel
-% \setbeamertemplate{frametitle}[default][center]
-
-% Itemize-Symbole
-% \setbeamertemplate{itemize item}[circle]
-% \setbeamertemplate{itemize subitem}[triangle]

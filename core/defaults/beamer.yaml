@@ -36,11 +36,11 @@ variables:
   # CambridgeUS, Copenhagen, Darmstadt, Dresden, Frankfurt, Goettingen, Hannover,
   # Ilmenau, JuanLesPins, Luebeck, Madrid, Malmoe, Marburg, Montpellier, PaloAlto,
   # Pittsburgh, Rochester, Singapore, Szeged, Warsaw)
-  theme: Singapore
+  theme: Madrid
   
   # Color Theme (default, albatross, beaver, beetle, crane, dolphin, dove, fly,
   # lily, orchid, rose, seagull, seahorse, whale, wolverine)
-  colortheme: seahorse
+  colortheme: default
   
   # Font Theme (default, professionalfonts, serif, structurebold, structureitalicserif, structuresmallcapsserif)
   fonttheme: default
