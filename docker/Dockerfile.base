@@ -1,117 +1,29 @@
 # ==============================================================================
-# Dockerfile.base - Minimales Pandoc Base Image
+# Dockerfile.base - Base Image with Core Tools
 # ==============================================================================
-# Dieses Image enthält nur Pandoc und grundlegende Abhängigkeiten.
-# Es dient als Basis für spezialisierte Images und kann auch standalone verwendet
-# werden für einfache Markdown-Konvertierungen.
-#
-# Build:  docker build -f docker/Dockerfile.base -t pandoc-base:latest .
-# Usage:  docker run --rm -v $(pwd):/data pandoc-base slides.md -o output.html
+# Multi-stage base image that serves as foundation for other Dockerfile types.
 
-# ------------------------------------------------------------------------------
-# Build Stage: Pandoc Installation
-# ------------------------------------------------------------------------------
-FROM alpine:3.19 AS builder
-
-# Metadata
-LABEL maintainer="koflerphillip@outlook.com"
-LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
-LABEL org.opencontainers.image.description="Minimal Pandoc base image for document conversion"
-
-# Build arguments
+# Stage 1: Pandoc Binary
+FROM alpine:3.19 AS pandoc-fetcher
 ARG PANDOC_VERSION=3.1.11
+RUN apk add --no-cache wget && \
+    wget -qO- https://github.com/jgm/pandoc/releases/download/$\{PANDOC_VERSION\}/pandoc-$\{PANDOC_VERSION\}-linux-amd64.tar.gz | \
+    tar xz --strip-components=2 -C /usr/local/bin/ "pandoc-${PANDOC_VERSION}/bin/pandoc"
 
-# Install build dependencies
-RUN apk add --no-cache \
-    wget \
-    ca-certificates
+# Stage 2: Base Runtime
+FROM debian:bookworm-slim
 
-# Download and install Pandoc
-RUN wget -q "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
-    && tar xzf "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
-    && mv "pandoc-${PANDOC_VERSION}/bin/pandoc" /usr/local/bin/ \
-    && rm -rf "pandoc-${PANDOC_VERSION}" "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
-
-# ------------------------------------------------------------------------------
-# Final Stage: Minimal Runtime Image
-# ------------------------------------------------------------------------------
-FROM alpine:3.19
-
-# Copy pandoc binary from builder
-COPY --from=builder /usr/local/bin/pandoc /usr/local/bin/pandoc
-
-# Install runtime dependencies with optional packages
-RUN apk add --no-cache \
-    # Core dependencies
-    gmp \
-    libffi \
-    lua5.3 \
-    ca-certificates \
-    zlib \
-    # Fonts and graphics
-    fontconfig \
-    freetype \
-    ttf-dejavu \
-    ttf-liberation \
-    # Text processing and utilities
-    wget \
-    curl \
-    git \
-    file \
-    less \
-    nano \
-    vim \
-    # PDF and image processing
-    ghostscript \
-    imagemagick \
-    graphviz \
-    poppler \
-    poppler-utils \
-    # Additional tools
-    make \
-    patch \
-    zip \
-    unzip \
-    tar \
-    gzip \
-    bzip2 \
-    xz \
-    # Python for filters
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
-    py3-pip \
-    py3-setuptools \
-    py3-yaml \
-    py3-click \
-    # Development tools (optional)
-    nodejs \
-    npm \
-    build-base \
-    openssl-dev
+    python3-pip \
+    python3-yaml \
+    git \
+    wget \
+    ca-certificates \
+    make \
+    && rm -rf /var/lib/apt/lists/*
 
-# Erstelle non-root User für Sicherheit
-RUN addgroup -g 1000 pandoc && \
-    adduser -D -u 1000 -G pandoc pandoc
+COPY --from=pandoc-fetcher /usr/local/bin/pandoc /usr/local/bin/pandoc
 
-# Arbeitsverzeichnis
 WORKDIR /data
-
-# Volume für Input/Output
-VOLUME ["/data"]
-
-# Wechsel zu non-root User
-USER pandoc
-
-# Entrypoint
-ENTRYPOINT ["pandoc"]
-
-# Default: Version anzeigen (wenn keine Argumente übergeben werden)
-CMD ["--version"]
-
-# ------------------------------------------------------------------------------
-# Image Informationen
-# ------------------------------------------------------------------------------
-# Size: ~40 MB
-# Base: Alpine Linux
-# Pandoc Version: 3.1.11
-# User: non-root (pandoc:1000)
-# Working Directory: /data

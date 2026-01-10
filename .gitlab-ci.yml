@@ -1,297 +1,62 @@
-# ==============================================================================
-# GitLab CI/CD Pipeline - Docker Build & Publish
-# ==============================================================================
-# This pipeline builds Docker images and publishes them to GitLab Container Registry
-#
-# Triggers:
-#   - Push to main branch
-#   - Git tags (v*)
-#   - Merge requests (build only, no publish)
-#
-# Images:
-#   - pandoc-base
-#   - pandoc-revealjs
-#   - pandoc-beamer
-#
-# Registry: registry.gitlab.com/woofi4/public/pandoc-presentation-creator
-# ==============================================================================
-
-default:
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+stages:
+  - registry
+  - validation
+  - build
+  - deploy
 
 variables:
-  # GitLab Container Registry
-  REGISTRY: $CI_REGISTRY
-  REGISTRY_IMAGE: $CI_REGISTRY_IMAGE
-  
-  # Docker Build Configuration
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
-  
-  # Image Names
-  IMAGE_BASE: $CI_REGISTRY_IMAGE/pandoc-base
-  IMAGE_REVEALJS: $CI_REGISTRY_IMAGE/pandoc-revealjs
-  IMAGE_BEAMER: $CI_REGISTRY_IMAGE/pandoc-beamer
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE/upe:latest
 
-# Stages definition
-stages:
-  - build
-  - test
-  - release
-
-# ==============================================================================
-# Stage: Build - Parallel Docker Image Builds
-# ==============================================================================
-
-# Build Base Image
-build:base:
-  stage: build
-  image: docker:24-dind
+# 1. Registry Stage: Build Omni-Container
+build_container:
+  stage: registry
+  image: docker:latest
   services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker:dind
   script:
-    # Extract version from git tag or use "latest"
-    - export VERSION=${CI_COMMIT_TAG:-latest}
-    - echo "Building pandoc-base version $VERSION"
-    
-    # Build with BuildKit and caching
-    - docker build
-      --file docker/Dockerfile.base
-      --tag $IMAGE_BASE:$VERSION
-      --tag $IMAGE_BASE:latest
-      --tag $IMAGE_BASE:base
-      --cache-from $IMAGE_BASE:latest
-      --build-arg BUILDKIT_INLINE_CACHE=1
-      --label "org.opencontainers.image.source=$CI_PROJECT_URL"
-      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
-      --label "org.opencontainers.image.created=$(date -Iseconds)"
-      .
-    
-    # Push images
-    - docker push $IMAGE_BASE:$VERSION
-    - docker push $IMAGE_BASE:latest
-    - docker push $IMAGE_BASE:base
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE -f docker/Dockerfile .
+    - docker push $DOCKER_IMAGE
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-  cache:
-    key: docker-base-$CI_COMMIT_REF_SLUG
+    - changes:
+        - docker/Dockerfile
+        - core/templates/**/*
+
+# 2. Validation Stage
+lint_markdown:
+  stage: validation
+  image: node:latest
+  script:
+    - npm install -g markdownlint-cli
+    - markdownlint slides/*.md
+  allow_failure: true
+
+# 3. Build Stage (Parallel for formats)
+build_presentations:
+  stage: build
+  image: $DOCKER_IMAGE
+  script:
+    - |
+      for slide in slides/*.md; do
+        python3 /app/scripts/build.py --input "$slide" --format all
+      done
+  artifacts:
     paths:
-      - .docker-cache/
+      - output/
+    expire_in: 1 week
 
-# Build Reveal.js Image
-build:revealjs:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+# 4. Deploy Stage
+pages:
+  stage: deploy
+  dependencies:
+    - build_presentations
   script:
-    - export VERSION=${CI_COMMIT_TAG:-latest}
-    - echo "Building pandoc-revealjs version $VERSION"
-    
-    - docker build
-      --file docker/Dockerfile.revealjs
-      --tag $IMAGE_REVEALJS:$VERSION
-      --tag $IMAGE_REVEALJS:latest
-      --tag $IMAGE_REVEALJS:revealjs
-      --cache-from $IMAGE_REVEALJS:latest
-      --build-arg BUILDKIT_INLINE_CACHE=1
-      --label "org.opencontainers.image.source=$CI_PROJECT_URL"
-      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
-      --label "org.opencontainers.image.created=$(date -Iseconds)"
-      .
-    
-    - docker push $IMAGE_REVEALJS:$VERSION
-    - docker push $IMAGE_REVEALJS:latest
-    - docker push $IMAGE_REVEALJS:revealjs
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-  cache:
-    key: docker-revealjs-$CI_COMMIT_REF_SLUG
+    - mkdir -p public
+    - cp output/*.html public/
+    # Copy PDFs as well for download
+    - cp output/*.pdf public/
+  artifacts:
     paths:
-      - .docker-cache/
-
-# Build Beamer Image
-build:beamer:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - export VERSION=${CI_COMMIT_TAG:-latest}
-    - echo "Building pandoc-beamer version $VERSION"
-    
-    - docker build
-      --file docker/Dockerfile.beamer
-      --tag $IMAGE_BEAMER:$VERSION
-      --tag $IMAGE_BEAMER:latest
-      --tag $IMAGE_BEAMER:beamer
-      --cache-from $IMAGE_BEAMER:latest
-      --build-arg BUILDKIT_INLINE_CACHE=1
-      --label "org.opencontainers.image.source=$CI_PROJECT_URL"
-      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
-      --label "org.opencontainers.image.created=$(date -Iseconds)"
-      .
-    
-    - docker push $IMAGE_BEAMER:$VERSION
-    - docker push $IMAGE_BEAMER:latest
-    - docker push $IMAGE_BEAMER:beamer
+      - public
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-  cache:
-    key: docker-beamer-$CI_COMMIT_REF_SLUG
-    paths:
-      - .docker-cache/
-
-# ==============================================================================
-# Stage: Test - Verify Built Images
-# ==============================================================================
-
-test:base:
-  stage: test
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $IMAGE_BASE:latest
-    - docker run --rm $IMAGE_BASE:latest --version
-  needs:
-    - build:base
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-
-test:revealjs:
-  stage: test
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $IMAGE_REVEALJS:latest
-    - docker run --rm $IMAGE_REVEALJS:latest --version
-    
-    # Test with example presentation
-    - docker run --rm -v $(pwd):/data $IMAGE_REVEALJS:latest
-      -d /pandoc/defaults/revealjs.yaml
-      examples/minimal.md -o /tmp/test.html || echo "Test completed with warnings"
-  needs:
-    - build:revealjs
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-
-test:beamer:
-  stage: test
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $IMAGE_BEAMER:latest
-    - docker run --rm $IMAGE_BEAMER:latest --version
-    
-    # Test with example presentation
-    - docker run --rm -v $(pwd):/data $IMAGE_BEAMER:latest
-      -d /pandoc/defaults/beamer.yaml
-      examples/minimal.md -o /tmp/test.pdf || echo "Test completed with warnings"
-  needs:
-    - build:beamer
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-
-# ==============================================================================
-# Stage: Release - Create GitLab Release
-# ==============================================================================
-
-release:gitlab:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Creating GitLab release for $CI_COMMIT_TAG"
-  release:
-    tag_name: '$CI_COMMIT_TAG'
-    description: |
-      Release $CI_COMMIT_TAG
-      
-      Docker Images:
-      - registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-base:$CI_COMMIT_TAG
-      - registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-revealjs:$CI_COMMIT_TAG
-      - registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:$CI_COMMIT_TAG
-  needs:
-    - test:base
-    - test:revealjs
-    - test:beamer
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-
-# ==============================================================================
-# Merge Request Pipeline - Build Only (No Publish)
-# ==============================================================================
-
-mr:build:base:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  script:
-    - docker build --file docker/Dockerfile.base --tag pandoc-base:mr .
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
-mr:build:revealjs:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  script:
-    - docker build --file docker/Dockerfile.revealjs --tag pandoc-revealjs:mr .
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
-mr:build:beamer:
-  stage: build
-  image: docker:24-dind
-  services:
-    - docker:24-dind
-  script:
-    - docker build --file docker/Dockerfile.beamer --tag pandoc-beamer:mr .
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
-# ==============================================================================
-# Configuration Notes
-# ==============================================================================
-# 
-# Required GitLab CI/CD Variables (Settings > CI/CD > Variables):
-#   None required for GitLab Container Registry (uses CI_REGISTRY_* built-in variables)
-#
-# Optional Variables for Docker Hub:
-#   DOCKERHUB_USERNAME - Docker Hub username
-#   DOCKERHUB_TOKEN - Docker Hub access token
-#
-# Registry Access:
-#   Images are public by default in GitLab Container Registry
-#   Configure in Settings > Packages & Registries > Container Registry
-#
-# Manual Trigger:
-#   Run pipeline manually from CI/CD > Pipelines > Run Pipeline
-#
-# ==============================================================================
+    - if: $CI_COMMIT_BRANCH == "main"

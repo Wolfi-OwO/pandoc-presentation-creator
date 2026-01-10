@@ -1,42 +1,31 @@
 # ==============================================================================
-# Dockerfile.beamer - Beamer/LaTeX PDF-Präsentations-Image
+# Dockerfile.beamer - Beamer/LaTeX PDF Presentation Image
 # ==============================================================================
-# Dieses Image enthält Pandoc + minimal LaTeX für Beamer-PDF-Präsentationen.
-# Optimiert für kleine Image-Größe mit nur den notwendigen LaTeX-Paketen.
+# This image contains Pandoc and a minimal LaTeX installation for generating
+# PDF presentations using the Beamer document class. Optimized for size while
+# ensuring stability.
 #
-# Build:  docker build -f docker/Dockerfile.beamer -t pandoc-beamer:latest .
-# Usage:  docker run --rm -v $(pwd):/data pandoc-beamer \
-#           -d defaults/beamer.yaml slides.md -o slides.pdf
+# Build: docker build -f docker/Dockerfile.beamer -t pandoc-beamer:latest .
+# Usage: docker run --rm -v $(pwd):/data pandoc-beamer python3 scripts/build.py --input slides.md
 
-# ------------------------------------------------------------------------------
-# Build Stage 1: Pandoc Binary
-# ------------------------------------------------------------------------------
-FROM alpine:3.19 AS pandoc-builder
-
+# Stage 1: Pandoc Binary Extractor
+FROM alpine:3.19 AS pandoc-fetcher
 ARG PANDOC_VERSION=3.1.11
+RUN apk add --no-cache wget && \
+    wget -qO- https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz | \
+    tar xz --strip-components=2 -C /usr/local/bin/ "pandoc-${PANDOC_VERSION}/bin/pandoc"
 
-RUN apk add --no-cache wget ca-certificates \
-    && wget -q "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
-    && tar xzf "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
-    && mv "pandoc-${PANDOC_VERSION}/bin/pandoc" /usr/local/bin/ \
-    && rm -rf "pandoc-${PANDOC_VERSION}" "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
-
-# ------------------------------------------------------------------------------
-# Final Stage: LaTeX Runtime Image (Debian-based für bessere TeX-Unterstützung)
-# ------------------------------------------------------------------------------
-# Wir nutzen Debian slim statt Alpine, da LaTeX auf Debian besser funktioniert
+# Stage 2: Final Runtime (Debian-based for LaTeX compatibility)
 FROM debian:bookworm-slim
 
-# Metadata
-LABEL maintainer="koflerphillip@outlook.com"
-LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
-LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
 LABEL maintainer="koflerphillip@outlook.com"
 LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
 LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
 
-# Copy Pandoc from builder
-COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Copy Pandoc from builder stage
+COPY --from=pandoc-fetcher /usr/local/bin/pandoc /usr/local/bin/pandoc
 
 # Install system dependencies first
 RUN apt-get update && \
