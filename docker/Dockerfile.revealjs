@@ -107,11 +107,10 @@ RUN addgroup -g 1000 pandoc && \
     adduser -D -u 1000 -G pandoc pandoc
 
 # Kopiere Projekt-Dateien (nur was für revealjs benötigt wird)
-COPY --chown=pandoc:pandoc defaults/revealjs.yaml /pandoc/defaults/
-COPY --chown=pandoc:pandoc metadata/ /pandoc/metadata/
-COPY --chown=pandoc:pandoc filters/ /pandoc/filters/
-COPY --chown=pandoc:pandoc includes/ /pandoc/includes/
-COPY --chown=pandoc:pandoc assets/ /pandoc/assets/
+COPY --chown=pandoc:pandoc core/defaults/revealjs.yaml /pandoc/defaults/
+COPY --chown=pandoc:pandoc core/metadata/ /pandoc/metadata/
+COPY --chown=pandoc:pandoc core/filters/ /pandoc/filters/
+COPY --chown=pandoc:pandoc core/includes/ /pandoc/includes/
 
 # Arbeitsverzeichnis
 WORKDIR /data
