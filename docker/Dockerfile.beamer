@@ -38,33 +38,67 @@ LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for
 # Copy Pandoc from builder
 COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
 
-# Install minimal LaTeX + Beamer dependencies
-# Wir installieren nur das Nötigste, keine full texlive-full!
+# Install system dependencies first
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    # Minimal LaTeX
+    ca-certificates \
+    wget \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install LaTeX + Beamer dependencies with comprehensive packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    # Core LaTeX packages
     texlive-latex-base \
     texlive-latex-recommended \
-    # Beamer
     texlive-latex-extra \
-    # Fonts
+    texlive-xetex \
+    texlive-luatex \
+    # Fonts and typography
     texlive-fonts-recommended \
     texlive-fonts-extra \
     lmodern \
     cm-super \
-    # XeLaTeX für bessere Schriftunterstützung
-    texlive-xetex \
-    # Zusätzliche Pakete für Präsentationen
+    courier \
+    # Graphics and visualization
     texlive-pictures \
     texlive-pstricks \
-    # Für Grafiken und Konvertierungen
+    texlive-metapost \
+    graphviz \
     ghostscript \
     imagemagick \
-    # Für Lua-Filter
+    # Math and scientific packages
+    texlive-science \
+    # Additional commonly used packages
+    texlive-generic-extra \
+    # Tools and utilities
     lua5.3 \
-    # Cleaning up
+    python3 \
+    py3-pip \
+    make \
+    patch \
+    zip \
+    unzip \
+    # Development tools (optional)
+    nodejs \
+    npm \
+    # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install useful Python packages for pandoc filters
+RUN pip3 install --no-cache-dir \
+    pandoc-shortcaption \
+    pyyaml \
+    click \
+    pyaml
+
+# Install optional Java for PlantUML support (can be commented out if not needed)
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends openjdk21-jre && \
+#     rm -rf /var/lib/apt/lists/*
 
 # Erstelle non-root User
 RUN groupadd -g 1000 pandoc && \

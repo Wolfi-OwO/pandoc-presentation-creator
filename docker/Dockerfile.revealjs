@@ -50,23 +50,47 @@ COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
 COPY --from=node-builder /usr/local/bin/node /usr/local/bin/node
 COPY --from=node-builder /usr/lib /usr/lib
 
-# Install runtime dependencies
+# Install runtime dependencies with optional packages
 RUN apk add --no-cache \
-    # Grundlegende Abhängigkeiten
+    # Core dependencies
     gmp \
     libffi \
     lua5.3 \
-    # Schriftarten
-    fontconfig \
-    ttf-dejavu \
-    ttf-liberation \
-    # Web-Fonts Support
     ca-certificates \
-    # Für bessere HTML-Verarbeitung
     zlib \
     libstdc++ \
-    # Optionale JavaScript-Unterstützung
-    npm
+    # Fonts and graphics
+    fontconfig \
+    freetype \
+    ttf-dejavu \
+    ttf-liberation \
+    # Text processing and utilities
+    wget \
+    curl \
+    git \
+    # Image processing
+    graphviz \
+    imagemagick \
+    ghostscript \
+    # Tools and utilities
+    make \
+    patch \
+    zip \
+    unzip \
+    tar \
+    gzip \
+    # Python support for filters
+    python3 \
+    py3-pip \
+    # JavaScript and Node support
+    npm \
+    nodejs
+
+# Install useful Python packages for pandoc filters
+RUN pip3 install --no-cache-dir \
+    pandoc-shortcaption \
+    pyyaml \
+    click
 
 # Erstelle non-root User
 RUN addgroup -g 1000 pandoc && \

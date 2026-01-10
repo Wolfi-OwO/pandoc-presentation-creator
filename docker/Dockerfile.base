@@ -40,19 +40,45 @@ FROM alpine:3.19
 # Copy pandoc binary from builder
 COPY --from=builder /usr/local/bin/pandoc /usr/local/bin/pandoc
 
-# Install minimal runtime dependencies
+# Install runtime dependencies with optional packages
 RUN apk add --no-cache \
-    # Grundlegende Abhängigkeiten
+    # Core dependencies
     gmp \
     libffi \
     lua5.3 \
-    # Für bessere Schriftarten
-    fontconfig \
-    ttf-dejavu \
-    # Für HTTP-Requests (falls benötigt)
     ca-certificates \
-    # Für bessere Performance
-    zlib
+    zlib \
+    # Fonts and graphics
+    fontconfig \
+    freetype \
+    ttf-dejavu \
+    ttf-liberation \
+    # Text processing and utilities
+    wget \
+    curl \
+    git \
+    # PDF and image processing
+    ghostscript \
+    imagemagick \
+    # Additional tools
+    make \
+    patch \
+    zip \
+    unzip \
+    tar \
+    gzip \
+    # Python for filters
+    python3 \
+    py3-pip \
+    # Development tools (optional)
+    nodejs \
+    npm
+
+# Install useful Python packages for pandoc filters
+RUN pip3 install --no-cache-dir \
+    pandoc-shortcaption \
+    pyyaml \
+    click
 
 # Erstelle non-root User für Sicherheit
 RUN addgroup -g 1000 pandoc && \
