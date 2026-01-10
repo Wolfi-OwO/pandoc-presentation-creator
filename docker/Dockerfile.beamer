@@ -71,7 +71,6 @@ COPY --chown=pandoc:pandoc defaults/beamer.yaml /pandoc/defaults/
 COPY --chown=pandoc:pandoc metadata/ /pandoc/metadata/
 COPY --chown=pandoc:pandoc filters/ /pandoc/filters/
 COPY --chown=pandoc:pandoc includes/ /pandoc/includes/
-COPY --chown=pandoc:pandoc templates/beamer/ /pandoc/templates/beamer/
 
 # Arbeitsverzeichnis
 WORKDIR /data
