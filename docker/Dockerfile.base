@@ -53,8 +53,6 @@ RUN apk add --no-cache \
     freetype \
     ttf-dejavu \
     ttf-liberation \
-    noto \
-    noto-cjk \
     # Text processing and utilities
     wget \
     curl \
@@ -62,7 +60,7 @@ RUN apk add --no-cache \
     file \
     less \
     nano \
-    vi \
+    vim \
     # PDF and image processing
     ghostscript \
     imagemagick \
@@ -86,7 +84,6 @@ RUN apk add --no-cache \
     # Development tools (optional)
     nodejs \
     npm \
-    git \
     build-base \
     openssl-dev
 
