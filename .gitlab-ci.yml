@@ -4,6 +4,8 @@ stages:
 
 variables:
   CI_REGISTRY_IMAGE: registry.gitlab.com/woofi4/public/pandoc-presentation-creator
+  DOCKER_DRIVER: overlay2
+  DOCKER_BUILDKIT: 1
 
 # ==============================================================================
 # Stage 1: Build and Push Docker Images
@@ -14,9 +16,19 @@ build:base:
   image: docker:latest
   services:
     - docker:dind
-  script:
+  cache:
+    key: docker-base-$CI_COMMIT_REF_SLUG
+    paths:
+      - .docker-cache/
+  before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE/pandoc-base:latest -f docker/Dockerfile.base .
+    - mkdir -p .docker-cache
+  script:
+    - docker build 
+        --cache-from $CI_REGISTRY_IMAGE/pandoc-base:latest 
+        --build-arg BUILDKIT_INLINE_CACHE=1 
+        -t $CI_REGISTRY_IMAGE/pandoc-base:latest 
+        -f docker/Dockerfile.base .
     - docker push $CI_REGISTRY_IMAGE/pandoc-base:latest
   rules:
     - changes:
@@ -29,9 +41,20 @@ build:beamer:
   image: docker:latest
   services:
     - docker:dind
-  script:
+  cache:
+    key: docker-beamer-$CI_COMMIT_REF_SLUG
+    paths:
+      - .docker-cache/
+  before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE/pandoc-beamer:latest -f docker/Dockerfile.beamer .
+    - mkdir -p .docker-cache
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/pandoc-beamer:latest || true
+    - docker build 
+        --cache-from $CI_REGISTRY_IMAGE/pandoc-beamer:latest 
+        --build-arg BUILDKIT_INLINE_CACHE=1 
+        -t $CI_REGISTRY_IMAGE/pandoc-beamer:latest 
+        -f docker/Dockerfile.beamer .
     - docker push $CI_REGISTRY_IMAGE/pandoc-beamer:latest
   rules:
     - changes:
@@ -44,9 +67,20 @@ build:revealjs:
   image: docker:latest
   services:
     - docker:dind
-  script:
+  cache:
+    key: docker-revealjs-$CI_COMMIT_REF_SLUG
+    paths:
+      - .docker-cache/
+  before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE/pandoc-revealjs:latest -f docker/Dockerfile.revealjs .
+    - mkdir -p .docker-cache
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/pandoc-revealjs:latest || true
+    - docker build 
+        --cache-from $CI_REGISTRY_IMAGE/pandoc-revealjs:latest 
+        --build-arg BUILDKIT_INLINE_CACHE=1 
+        -t $CI_REGISTRY_IMAGE/pandoc-revealjs:latest 
+        -f docker/Dockerfile.revealjs .
     - docker push $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
   rules:
     - changes:
@@ -63,10 +97,15 @@ test:beamer:
   image: docker:latest
   services:
     - docker:dind
+  cache:
+    key: test-cache-$CI_COMMIT_REF_SLUG
+    paths:
+      - test-output/
   dependencies:
     - build:beamer
-  script:
+  before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
     - docker pull $CI_REGISTRY_IMAGE/pandoc-beamer:latest
     - mkdir -p test-output
     - |
@@ -93,10 +132,15 @@ test:revealjs:
   image: docker:latest
   services:
     - docker:dind
+  cache:
+    key: test-cache-$CI_COMMIT_REF_SLUG
+    paths:
+      - test-output/
   dependencies:
     - build:revealjs
-  script:
+  before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
     - docker pull $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
     - mkdir -p test-output
     - |
