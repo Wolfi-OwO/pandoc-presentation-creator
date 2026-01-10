@@ -1,62 +1,120 @@
 stages:
-  - registry
-  - validation
   - build
-  - deploy
+  - test
 
 variables:
-  DOCKER_IMAGE: $CI_REGISTRY_IMAGE/upe:latest
+  CI_REGISTRY_IMAGE: registry.gitlab.com/woofi4/public/pandoc-presentation-creator
 
-# 1. Registry Stage: Build Omni-Container
-build_container:
-  stage: registry
+# ==============================================================================
+# Stage 1: Build and Push Docker Images
+# ==============================================================================
+
+build:base:
+  stage: build
   image: docker:latest
   services:
     - docker:dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $DOCKER_IMAGE -f docker/Dockerfile .
-    - docker push $DOCKER_IMAGE
+    - docker build -t $CI_REGISTRY_IMAGE/pandoc-base:latest -f docker/Dockerfile.base .
+    - docker push $CI_REGISTRY_IMAGE/pandoc-base:latest
   rules:
     - changes:
-        - docker/Dockerfile
-        - core/templates/**/*
+        - docker/Dockerfile.base
+        - core/**/*
+    - if: $CI_COMMIT_BRANCH == "main"
 
-# 2. Validation Stage
-lint_markdown:
-  stage: validation
-  image: node:latest
-  script:
-    - npm install -g markdownlint-cli
-    - markdownlint slides/*.md
-  allow_failure: true
-
-# 3. Build Stage (Parallel for formats)
-build_presentations:
+build:beamer:
   stage: build
-  image: $DOCKER_IMAGE
+  image: docker:latest
+  services:
+    - docker:dind
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/pandoc-beamer:latest -f docker/Dockerfile.beamer .
+    - docker push $CI_REGISTRY_IMAGE/pandoc-beamer:latest
+  rules:
+    - changes:
+        - docker/Dockerfile.beamer
+        - core/**/*
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build:revealjs:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/pandoc-revealjs:latest -f docker/Dockerfile.revealjs .
+    - docker push $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
+  rules:
+    - changes:
+        - docker/Dockerfile.revealjs
+        - core/**/*
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ==============================================================================
+# Stage 2: Test Docker Images with Example Slides
+# ==============================================================================
+
+test:beamer:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - build:beamer
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/pandoc-beamer:latest
+    - mkdir -p test-output
     - |
       for slide in slides/*.md; do
-        python3 /app/scripts/build.py --input "$slide" --format all
+        filename=$(basename "$slide" .md)
+        echo "Testing Beamer with $slide..."
+        docker run --rm -v $(pwd):/data $CI_REGISTRY_IMAGE/pandoc-beamer:latest \
+          -f markdown \
+          -t beamer \
+          --slide-level=2 \
+          /data/$slide \
+          -o /data/test-output/${filename}-beamer.pdf
       done
+    - ls -lh test-output/
   artifacts:
     paths:
-      - output/
+      - test-output/*.pdf
     expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
 
-# 4. Deploy Stage
-pages:
-  stage: deploy
+test:revealjs:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
   dependencies:
-    - build_presentations
+    - build:revealjs
   script:
-    - mkdir -p public
-    - cp output/*.html public/
-    # Copy PDFs as well for download
-    - cp output/*.pdf public/
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
+    - mkdir -p test-output
+    - |
+      for slide in slides/*.md; do
+        filename=$(basename "$slide" .md)
+        echo "Testing Reveal.js with $slide..."
+        docker run --rm -v $(pwd):/data $CI_REGISTRY_IMAGE/pandoc-revealjs:latest \
+          -f markdown \
+          -t revealjs \
+          --standalone \
+          --slide-level=2 \
+          /data/$slide \
+          -o /data/test-output/${filename}-revealjs.html
+      done
+    - ls -lh test-output/
   artifacts:
     paths:
-      - public
+      - test-output/*.html
+    expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
