@@ -84,30 +84,33 @@ Statt eines großen Monolithen gibt es **drei spezialisierte Images**:
 
 ### Architektur
 
-```
-┌──────────────────────────────────────────────────────────┐
-│          GitLab Container Registry (Public)              │
-│ registry.gitlab.com/woofi4/public/pandoc-presentation-* │
-└──────────────────────────────────────────────────────────┘
-                           ▲
-                           │
-                 Automatischer Push bei
-                    Git Push/Tag
-                           │
-┌──────────────────────────────────────────────────────────┐
-│                   GitLab CI/CD                           │
-│  • Parallel Builds (base, revealjs, beamer)             │
-│  • Multi-Platform (amd64, arm64)                        │
-│  • Layer Caching                                         │
-│  • Automatische Tests                                    │
-└──────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────────────────┐
-│                  Lokale Entwicklung                      │
-│  docker run --rm -v $(pwd):/data \                      │
-│    pandoc-revealjs slides.md -o output.html             │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph registry["GitLab Container Registry"]
+        base["pandoc-base:latest<br/>~40 MB"]
+        revealjs["pandoc-revealjs:latest<br/>~80 MB"]
+        beamer["pandoc-beamer:latest<br/>~250 MB"]
+    end
+    
+    subgraph cicd["GitLab CI/CD Pipeline"]
+        direction LR
+        build["Build Stage<br/>Parallel Builds"]
+        test["Test Stage<br/>Image Validation"]
+        release["Release Stage<br/>GitLab Release"]
+        build --> test --> release
+    end
+    
+    subgraph local["Lokale Entwicklung"]
+        docker["docker run --rm -v \$(pwd):/data<br/>pandoc-revealjs:latest<br/>slides.md -o output.html"]
+    end
+    
+    git["Git Push/Tag"] -->|Trigger| cicd
+    cicd -->|Push Images| registry
+    registry -->|Pull Images| local
+    
+    style registry fill:#e1f5fe
+    style cicd fill:#fff3e0
+    style local fill:#f1f8e9
 ```
 
 ---
