@@ -65,14 +65,9 @@ RUN apt-get update && \
     # Graphics and visualization
     texlive-pictures \
     texlive-pstricks \
-    texlive-metapost \
     graphviz \
     ghostscript \
     imagemagick \
-    # Math and scientific packages
-    texlive-science \
-    # Additional commonly used packages
-    texlive-generic-extra \
     # Tools and utilities
     lua5.3 \
     python3 \
@@ -90,10 +85,8 @@ RUN apt-get update && \
 
 # Install useful Python packages for pandoc filters
 RUN pip3 install --no-cache-dir \
-    pandoc-shortcaption \
     pyyaml \
-    click \
-    pyaml
+    click
 
 # Install optional Java for PlantUML support (can be commented out if not needed)
 # RUN apt-get update && \

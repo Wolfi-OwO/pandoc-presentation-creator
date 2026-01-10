@@ -76,7 +76,6 @@ RUN apk add --no-cache \
 
 # Install useful Python packages for pandoc filters
 RUN pip3 install --no-cache-dir \
-    pandoc-shortcaption \
     pyyaml \
     click
 
