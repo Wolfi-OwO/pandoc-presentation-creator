@@ -41,15 +41,7 @@ case $FORMAT_OPT in
   *) FORMAT="beamer"
      IMAGE_TYPE="beamer"
      OUTPUT_EXT="pdf"
-     echo ""
-     echo "Select Beamer Theme:"
-     echo "1) Madrid (Standard)"
-     echo "2) Metropolis (Modern)"
-     read -p "Enter choice [1]: " THEME_OPT
-     case $THEME_OPT in
-       2) THEME="Metropolis" ;;
-       *) THEME="Madrid" ;;
-     esac ;;
+     THEME="Madrid" ;;
 esac
 
 # Step 2: Create Only User-Facing Directory Structure
