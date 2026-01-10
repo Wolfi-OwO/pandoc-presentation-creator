@@ -64,14 +64,24 @@ RUN apk add --no-cache \
     freetype \
     ttf-dejavu \
     ttf-liberation \
+    noto \
+    noto-cjk \
+    # Web and HTTP support
+    ca-certificates \
     # Text processing and utilities
     wget \
     curl \
     git \
+    file \
+    less \
+    nano \
+    vi \
     # Image processing
     graphviz \
     imagemagick \
     ghostscript \
+    poppler \
+    poppler-utils \
     # Tools and utilities
     make \
     patch \
@@ -79,12 +89,19 @@ RUN apk add --no-cache \
     unzip \
     tar \
     gzip \
+    bzip2 \
+    xz \
     # Python support for filters
     python3 \
     py3-pip \
+    py3-setuptools \
+    py3-yaml \
     # JavaScript and Node support
     npm \
-    nodejs
+    nodejs \
+    # Development tools
+    build-base \
+    openssl-dev
 
 # Install useful Python packages for pandoc filters
 RUN pip3 install --no-cache-dir \

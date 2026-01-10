@@ -56,29 +56,51 @@ RUN apt-get update && \
     texlive-latex-extra \
     texlive-xetex \
     texlive-luatex \
+    # Beamer-specific packages
+    texlive-beamer \
     # Fonts and typography
     texlive-fonts-recommended \
     texlive-fonts-extra \
     lmodern \
     cm-super \
-    courier \
+    fonts-dejavu \
+    fonts-liberation \
+    fonts-noto \
+    fonts-noto-cjk \
+    # Color and page styling packages
+    texlive-colors \
     # Graphics and visualization
     texlive-pictures \
     texlive-pstricks \
+    texlive-metapost \
+    texlive-extra-utils \
     graphviz \
     ghostscript \
     imagemagick \
-    # Tools and utilities
+    poppler-utils \
+    # PDF processing
+    pdftk-java \
+    # System tools and utilities
     lua5.3 \
     python3 \
-    py3-pip \
+    python3-pip \
+    python3-setuptools \
     make \
     patch \
     zip \
     unzip \
+    tar \
+    gzip \
+    wget \
+    curl \
+    git \
+    file \
+    less \
+    nano \
     # Development tools (optional)
     nodejs \
     npm \
+    build-essential \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
