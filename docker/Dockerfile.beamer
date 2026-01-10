@@ -122,7 +122,7 @@ RUN groupadd -g 1000 pandoc && \
     useradd -m -u 1000 -g pandoc pandoc
 
 # Kopiere Projekt-Dateien (nur was für beamer benötigt wird)
-COPY --chown=pandoc:pandoc core/defaults/beamer.yaml /pandoc/defaults/
+COPY --chown=pandoc:pandoc core/defaults/beamer.yaml /pandoc/defaults/beamer.yaml
 COPY --chown=pandoc:pandoc core/metadata/ /pandoc/metadata/
 COPY --chown=pandoc:pandoc core/filters/ /pandoc/filters/
 COPY --chown=pandoc:pandoc core/includes/ /pandoc/includes/
