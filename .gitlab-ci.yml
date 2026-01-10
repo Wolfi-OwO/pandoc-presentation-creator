@@ -39,36 +39,9 @@ variables:
 
 # Stages definition
 stages:
-  - lint
   - build
   - test
   - release
-
-# ==============================================================================
-# Stage: Lint
-# ==============================================================================
-lint:dockerfile:
-  stage: lint
-  image: hadolint/hadolint:latest-debian
-  script:
-    - hadolint docker/Dockerfile.base || true
-    - hadolint docker/Dockerfile.revealjs || true
-    - hadolint docker/Dockerfile.beamer || true
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH =|| true
-    - yamllint defaults/*.yaml || true
-    - yamllint
-    - if: '$CI_COMMIT_TAG =~ /^v/'
-
-lint:yaml:
-  stage: lint
-  image: cytopia/yamllint:latest
-  script:
-    - yamllint .gitlab-ci.yml defaults/*.yaml metadata/*.yaml || true
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # ==============================================================================
 # Stage: Build - Parallel Docker Image Builds

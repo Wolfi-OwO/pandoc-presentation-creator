@@ -76,6 +76,7 @@ Statt eines großen Monolithen gibt es **drei spezialisierte Images**:
 | **pandoc-beamer** | ~250 MB | PDF-Präsentationen | Pandoc + minimal LaTeX |
 
 **Vorteile:**
+
 - Paralleles Downloaden mehrerer Images
 - Nur herunterladen was benötigt wird
 - Schnellere Updates (nur betroffene Layers)
@@ -153,6 +154,7 @@ chmod +x setup-docker.sh
 ```
 
 Das Script:
+
 - Prüft Docker-Installation
 - Installiert Docker falls nötig (Linux)
 - Pullt benötigte Images von GitLab Container Registry
@@ -211,6 +213,7 @@ chmod +x setup.sh
 ### Image Tags
 
 Jedes Image ist verfügbar mit:
+
 - `latest` - Neueste Version vom main branch
 - `vX.Y.Z` - Spezifische Version (z.B. `v1.0.0`)
 - `{base,revealjs,beamer}` - Format-spezifischer Tag
@@ -262,6 +265,7 @@ wait
 **Einzige Voraussetzung: Docker**
 
 - **Docker** (Version 20.10+)
+
   ```bash
   # Linux - Automatische Installation
   curl -fsSL https://get.docker.com -o get-docker.sh
@@ -280,6 +284,7 @@ wait
   ```
 
 **Das war's!** Mit Docker benötigen Sie:
+
 - Kein Pandoc lokal
 - Kein LaTeX lokal
 - Kein Node.js lokal
@@ -582,6 +587,7 @@ chmod +x scripts/build-docker.sh
 ```
 
 Das Script:
+
 - Prüft Docker-Installation
 - Pullt Images automatisch (oder baut sie lokal)
 - Führt Pandoc im Container aus
@@ -683,18 +689,21 @@ git push origin v1.0.0
 #### Setup (einmalig)
 
 1. **GitLab CI/CD aktivieren**
+
    ```
    Repository → Settings → CI/CD
    Stellen Sie sicher, dass "CI/CD Pipelines" aktiviert ist
    ```
 
 2. **GitLab Container Registry aktivieren**
+
    ```
    Repository → Settings → Integrations
    GitLab Container Registry ist standardmäßig aktiviert
    ```
 
 3. **Workflow starten**
+
    ```bash
    # Einfach pushen - Workflow startet automatisch
    git add .gitlab-ci.yml
@@ -1254,7 +1263,7 @@ Bei Fragen oder Problemen:
 
 - Fehler-Bericht: [Issues](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/issues)
 - Diskussionen: [Discussions](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/discussions)
-- E-Mail: koflerphillip@outlook.com
+- E-Mail: <koflerphillip@outlook.com>
 
 ---
 

@@ -65,8 +65,7 @@ ask_question() {
     fi
     
     read answer
-    answer="${answer:-$default}"
-    printf "%s" "$answer"
+    echo "${answer:-$default}"
 }
 
 ask_yes_no() {
@@ -101,7 +100,6 @@ check_and_install_docker() {
         local docker_version=$(docker --version)
         print_success "Docker ist installiert: $docker_version"
         
-        # Docker-Daemon prüfen
         if ! docker ps &> /dev/null; then
             print_warning "Docker-Daemon läuft nicht!"
             
@@ -114,14 +112,13 @@ check_and_install_docker() {
                     sudo systemctl start docker
                 fi
                 
-                # Warten bis Docker bereit ist
                 local attempts=0
                 while ! docker ps &> /dev/null && [ $attempts -lt 30 ]; do
                     echo -n "."
                     sleep 1
                     ((attempts++))
                 done
-                echo -e ""
+                echo ""
                 
                 if docker ps &> /dev/null; then
                     print_success "Docker ist jetzt aktiv"
@@ -137,22 +134,20 @@ check_and_install_docker() {
         return 0
     fi
     
-    # Docker ist nicht installiert
     print_warning "Docker ist nicht installiert!"
-    echo -e ""
+    echo ""
     print_info "Docker ist die EINZIGE Abhängigkeit für dieses Projekt."
     print_info "Keine lokale Pandoc-Installation erforderlich!"
-    echo -e ""
+    echo ""
     
     if ! ask_yes_no "Möchten Sie Docker jetzt installieren?" "y"; then
         print_info "Bitte installieren Sie Docker manuell:"
-        echo -e "  - Linux: https://docs.docker.com/engine/install/"
-        echo -e "  - macOS: https://docs.docker.com/desktop/install/mac-install/"
-        echo -e "  - Windows: https://docs.docker.com/desktop/install/windows-install/"
+        echo "  - Linux: https://docs.docker.com/engine/install/"
+        echo "  - macOS: https://docs.docker.com/desktop/install/mac-install/"
+        echo "  - Windows: https://docs.docker.com/desktop/install/windows-install/"
         exit 1
     fi
     
-    # Automatische Docker-Installation
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         print_info "Installiere Docker auf Linux..."
         curl -fsSL https://get.docker.com -o get-docker.sh
@@ -160,17 +155,17 @@ check_and_install_docker() {
         sudo usermod -aG docker $USER
         rm get-docker.sh
         print_success "Docker installiert!"
-        print_warning "Bitte melden Sie sich ab und wieder an, damit Gruppen-Änderungen wirksam werden."
+        print_warning "Bitte melden Sie sich ab und wieder an."
         print_info "Danach führen Sie dieses Script erneut aus."
         exit 0
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         print_info "Für macOS installieren Sie bitte Docker Desktop manuell:"
-        echo -e "  https://docs.docker.com/desktop/install/mac-install/"
+        echo "  https://docs.docker.com/desktop/install/mac-install/"
         exit 1
     else
         print_error "Automatische Installation auf diesem OS nicht unterstützt"
         print_info "Bitte installieren Sie Docker manuell:"
-        echo -e "  https://docs.docker.com/get-docker/"
+        echo "  https://docs.docker.com/get-docker/"
         exit 1
     fi
 }
@@ -181,17 +176,19 @@ check_and_install_docker() {
 select_and_pull_images() {
     print_step "Docker Images auswählen"
     
-    echo -e ""
-    echo -e "Welche Docker Images möchten Sie verwenden?"
+    echo ""
+    echo "Welche Docker Images möchten Sie verwenden?"
     echo -e "  ${CYAN}1)${NC} Base (minimal, ~40 MB) - Für einfache Konvertierungen"
     echo -e "  ${CYAN}2)${NC} Reveal.js (~80 MB) - Für HTML-Präsentationen"
     echo -e "  ${CYAN}3)${NC} Beamer (~250 MB) - Für PDF-Präsentationen"
     echo -e "  ${CYAN}4)${NC} Alle Images"
     
     local choice=$(ask_question "Wähle eine Option [1-4]" "4")
+    SELECTED_OPTION="$choice"
     
+    echo $(choice)
+
     local images_to_pull=()
-    
     case $choice in
         1) images_to_pull=("pandoc-base") ;;
         2) images_to_pull=("pandoc-revealjs") ;;
@@ -199,8 +196,10 @@ select_and_pull_images() {
         4) images_to_pull=("pandoc-base" "pandoc-revealjs" "pandoc-beamer") ;;
         *) images_to_pull=("pandoc-base") ;;
     esac
+
+    echo $(images_to_pull)
     
-    echo -e ""
+    echo ""
     print_step "Docker Images herunterladen"
     
     for image in "${images_to_pull[@]}"; do
@@ -222,8 +221,27 @@ select_and_pull_images() {
         fi
     done
     
-    # Default-Image festlegen
-    DEFAULT_IMAGE="${images_to_pull[0]}"
+    # DEFAULT_IMAGE korrekt festlegen
+    case "$SELECTED_OPTION" in
+        1) DEFAULT_IMAGE="pandoc-base" ;;
+        2) DEFAULT_IMAGE="pandoc-revealjs" ;;
+        3) DEFAULT_IMAGE="pandoc-beamer" ;;
+        4)
+            echo ""
+            echo "Welches Image soll für die Test-Präsentation verwendet werden?"
+            echo "  1) pandoc-base"
+            echo "  2) pandoc-revealjs"
+            echo "  3) pandoc-beamer"
+            local test_choice=$(ask_question "Auswahl" "2")
+            case "$test_choice" in
+                1) DEFAULT_IMAGE="pandoc-base" ;;
+                2) DEFAULT_IMAGE="pandoc-revealjs" ;;
+                3) DEFAULT_IMAGE="pandoc-beamer" ;;
+                *) DEFAULT_IMAGE="pandoc-revealjs" ;;
+            esac
+            ;;
+        *) DEFAULT_IMAGE="pandoc-base" ;;
+    esac
 }
 
 # ------------------------------------------------------------------------------
@@ -266,17 +284,11 @@ setup_repository() {
 create_wrapper_scripts() {
     print_step "Docker-Wrapper-Skripte erstellen"
     
-    # Generiere pandoc-docker Wrapper
     cat > "$INSTALL_DIR/pandoc-docker" << EOF
 #!/usr/bin/env bash
-# Docker-Wrapper für Pandoc
-# Verwendung: ./pandoc-docker [image] [pandoc-args...]
-
 IMAGE="\${1:-pandoc-base}"
 shift
-
 FULL_IMAGE="${IMAGE_PREFIX}/\${IMAGE}:latest"
-
 docker run --rm \\
     -v "\$(pwd):/data" \\
     -u \$(id -u):\$(id -g) \\
@@ -287,12 +299,11 @@ EOF
     chmod +x "$INSTALL_DIR/pandoc-docker"
     print_success "Wrapper-Script erstellt: pandoc-docker"
     
-    echo -e ""
-    echo -e "Optional: Fügen Sie diese Aliase zu Ihrer ~/.bashrc oder ~/.zshrc hinzu:"
-    echo -e ""
-    echo -e "  alias pandoc-base='docker run --rm -v \$(pwd):/data ${IMAGE_PREFIX}/pandoc-base:latest'"
-    echo -e "  alias pandoc-revealjs='docker run --rm -v \$(pwd):/data ${IMAGE_PREFIX}/pandoc-revealjs:latest'"
-    echo -e "  alias pandoc-beamer='docker run --rm -v \$(pwd):/data ${IMAGE_PREFIX}/pandoc-beamer:latest'"
+    echo ""
+    echo "Optional: Aliase zu ~/.bashrc oder ~/.zshrc hinzufügen:"
+    echo "  alias pandoc-base='docker run --rm -v \$(pwd):/data ${IMAGE_PREFIX}/pandoc-base:latest'"
+    echo "  alias pandoc-revealjs='docker run --rm -v \$(pwd):/data ${IMAGE_PREFIX}/pandoc-revealjs:latest'"
+    echo "  alias pandoc-beamer='docker run --rm -v \$(pwd):/data ${IMAGE_PREFIX}/pandoc-beamer:latest'"
 }
 
 # ------------------------------------------------------------------------------
@@ -301,7 +312,6 @@ EOF
 create_example() {
     if ask_yes_no "Möchten Sie eine Test-Präsentation erstellen?" "y"; then
         print_step "Erstelle Test-Präsentation"
-        
         local image="${DEFAULT_IMAGE}"
         local full_image="${IMAGE_PREFIX}/${image}:latest"
         
@@ -310,32 +320,15 @@ create_example() {
         if [[ "$image" == *"revealjs"* ]]; then
             docker run --rm -v "$(pwd):/data" -u $(id -u):$(id -g) "$full_image" \
                 -d /pandoc/defaults/revealjs.yaml examples/minimal.md -o output/test.html
-            
-            if [ -f "output/test.html" ]; then
-                print_success "Test-Präsentation erstellt: output/test.html"
-                
-                if ask_yes_no "Möchten Sie die Präsentation öffnen?" "n"; then
-                    if command -v xdg-open &> /dev/null; then
-                        xdg-open output/test.html
-                    elif command -v open &> /dev/null; then
-                        open output/test.html
-                    fi
-                fi
-            fi
+            [ -f "output/test.html" ] && print_success "Test-Präsentation erstellt: output/test.html"
         elif [[ "$image" == *"beamer"* ]]; then
             docker run --rm -v "$(pwd):/data" -u $(id -u):$(id -g) "$full_image" \
                 -d /pandoc/defaults/beamer.yaml examples/minimal.md -o output/test.pdf
-            
-            if [ -f "output/test.pdf" ]; then
-                print_success "Test-Präsentation erstellt: output/test.pdf"
-            fi
+            [ -f "output/test.pdf" ] && print_success "Test-Präsentation erstellt: output/test.pdf"
         else
             docker run --rm -v "$(pwd):/data" -u $(id -u):$(id -g) "$full_image" \
                 examples/minimal.md -o output/test.html
-            
-            if [ -f "output/test.html" ]; then
-                print_success "Test-Präsentation erstellt: output/test.html"
-            fi
+            [ -f "output/test.html" ] && print_success "Test-Präsentation erstellt: output/test.html"
         fi
     fi
 }
@@ -344,11 +337,11 @@ create_example() {
 # Finale Instruktionen
 # ------------------------------------------------------------------------------
 print_final_instructions() {
-    echo -e ""
-    echo -e "================================================================"
-    echo -e "           Setup erfolgreich abgeschlossen!                      "
-    echo -e "================================================================"
-    echo -e ""
+    echo ""
+    echo "================================================================"
+    echo "           Setup erfolgreich abgeschlossen!                      "
+    echo "================================================================"
+    echo ""
     
     print_info "Verwendungsbeispiele:"
     echo ""
