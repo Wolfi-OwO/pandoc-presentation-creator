@@ -56,8 +56,6 @@ RUN apt-get update && \
     texlive-latex-extra \
     texlive-xetex \
     texlive-luatex \
-    # Beamer-specific packages
-    texlive-beamer \
     # Fonts and typography
     texlive-fonts-recommended \
     texlive-fonts-extra \
@@ -67,12 +65,9 @@ RUN apt-get update && \
     fonts-liberation \
     fonts-noto \
     fonts-noto-cjk \
-    # Color and page styling packages
-    texlive-colors \
     # Graphics and visualization
     texlive-pictures \
     texlive-pstricks \
-    texlive-metapost \
     texlive-extra-utils \
     graphviz \
     ghostscript \
