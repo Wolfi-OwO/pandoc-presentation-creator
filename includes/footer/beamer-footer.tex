@@ -6,23 +6,21 @@
 
 % Ensure footer line is visible
 \setbeamercolor{footline}{bg=structure!5!white, fg=structure!50!black}
-\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{footline}{size=\scriptsize}
 
 \setbeamertemplate{footline}{
   \ifnum\insertframenumber>1
-    \leavevmode%
-    \begin{beamercolorbox}[wd=\paperwidth,ht=3.5ex,dp=2.5ex,left,right,sep=0.5em]{footline}%
-      \hspace*{0.5em}%
+    \begin{beamercolorbox}[colsep=1.5pt]{upper separation line foot}
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm plus1fil]{footline}%
       {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertshortinstitute}%
       \hfill%
       {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertshorttitle}%
       \hfill%
       {\usebeamerfont{footline}\usebeamercolor[fg]{footline}\insertframenumber{}/\inserttotalframenumber}%
-      \hspace*{0.5em}%
     \end{beamercolorbox}%
-    % Add a thin line separator above footer for better visibility
-    \begin{beamercolorbox}[wd=\paperwidth,ht=0.5pt,dp=0pt]{separator}%
-    \end{beamercolorbox}%
+    \begin{beamercolorbox}[colsep=1.5pt]{lower separation line foot}
+    \end{beamercolorbox}
   \fi
 }
 
@@ -31,7 +29,6 @@
 
 % Better margin and spacing for footer
 \setbeamertemplate{frametitle}[default][left]
-\addtobeamertemplate{frametitle}{}{\vskip-1.2ex}
 
 % Ensure proper text sizing
 \usefonttheme{structurebold}

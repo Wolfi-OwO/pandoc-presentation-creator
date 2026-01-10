@@ -76,6 +76,11 @@ metadata-files:
 # ------------------------------------------------------------------------------
 include-in-header:
   - includes/header/beamer-packages.tex
+  - includes/footer/beamer-footer.tex
+
+# Ensure resources (includes, footer) are found both locally and in Docker
+resource-path:
+  - .
 
 # include-before-body:
 #   - includes/beamer-titlepage.tex

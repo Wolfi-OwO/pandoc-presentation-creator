@@ -14,18 +14,25 @@ subtitle: "Ein Beispiel für projektspezifische Metadaten"
 # Autor für diese spezifische Präsentation
 # ------------------------------------------------------------------------------
 author:
-  - Dr. Anna Schmidt
-  - Prof. Dr. Thomas Müller
+  - Kofler Phillip
 
 # ------------------------------------------------------------------------------
 # Datum
 # ------------------------------------------------------------------------------
-date: 2026-01-15
+date: "2026-01-15"
 
 # ------------------------------------------------------------------------------
 # Institution
 # ------------------------------------------------------------------------------
-institute: "Universität Beispielstadt"
+institute: "5BHIF"
+
+# ------------------------------------------------------------------------------
+# Footer Informationen (für Beamer)
+# ------------------------------------------------------------------------------
+# Linke Seite des Footers
+shortinstitute: "2026-01-15"
+# Mitte des Footers  
+shorttitle: "Kofler Phillip, 5BHIF"
 
 # ------------------------------------------------------------------------------
 # Präsentations-spezifische Informationen
