@@ -1,0 +1,61 @@
+% ==============================================================================
+% Custom Header für Beamer Präsentationen
+% ==============================================================================
+% Diese Datei wird in die Präambel der LaTeX-Datei eingefügt.
+% Hier können zusätzliche Pakete und Einstellungen hinzugefügt werden.
+
+% ------------------------------------------------------------------------------
+% Zusätzliche Pakete
+% ------------------------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+% ------------------------------------------------------------------------------
+% Schriftarten (für XeLaTeX/LuaLaTeX)
+% ------------------------------------------------------------------------------
+% \usepackage{fontspec}
+% \setmainfont{Inter}
+% \setmonofont{Fira Code}
+
+% ------------------------------------------------------------------------------
+% Farb-Definitionen
+% ------------------------------------------------------------------------------
+\definecolor{primarycolor}{RGB}{33, 150, 243}
+\definecolor{secondarycolor}{RGB}{255, 152, 0}
+\definecolor{accentcolor}{RGB}{76, 175, 80}
+
+% ------------------------------------------------------------------------------
+% Custom Commands
+% ------------------------------------------------------------------------------
+% Beispiel: Hervorhebung
+\newcommand{\highlight}[1]{\textcolor{primarycolor}{\textbf{#1}}}
+
+% Beispiel: Box für wichtige Informationen
+\newcommand{\infobox}[1]{%
+  \begin{beamercolorbox}[wd=\textwidth,rounded=true,shadow=true]{block body}%
+    #1%
+  \end{beamercolorbox}%
+}
+
+% ------------------------------------------------------------------------------
+% Fußzeile anpassen (Optional)
+% ------------------------------------------------------------------------------
+% \setbeamertemplate{footline}[frame number]
+
+% ------------------------------------------------------------------------------
+% Logo einfügen (Optional)
+% ------------------------------------------------------------------------------
+% \logo{\includegraphics[height=0.8cm]{assets/images/logo.png}}

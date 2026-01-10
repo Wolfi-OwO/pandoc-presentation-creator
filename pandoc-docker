@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Docker-Wrapper für Pandoc
+# Verwendung: ./pandoc-docker [image] [pandoc-args...]
+
+IMAGE="${1:-pandoc-base}"
+shift
+
+FULL_IMAGE="registry.gitlab.com/woofi4/public/pandoc-presentation-creator/${IMAGE}:latest"
+
+docker run --rm \
+    -v "$(pwd):/data" \
+    -u $(id -u):$(id -g) \
+    "$FULL_IMAGE" \
+    "$@"

@@ -1,0 +1,69 @@
+# ==============================================================================
+# Pandoc Defaults für PowerPoint (PPTX) Präsentationen
+# ==============================================================================
+# Diese Datei definiert alle Standard-Einstellungen für PPTX-Präsentationen.
+# Sie kann mit: pandoc -d defaults/pptx.yaml input.md -o output.pptx
+# aufgerufen werden.
+
+# ------------------------------------------------------------------------------
+# Output-Konfiguration
+# ------------------------------------------------------------------------------
+to: pptx
+output-file: output/presentation.pptx
+
+# ------------------------------------------------------------------------------
+# PowerPoint Spezifische Optionen
+# ------------------------------------------------------------------------------
+variables:
+  # Code-Highlighting
+  highlight-style: pygments
+
+# ------------------------------------------------------------------------------
+# Metadata-Dateien
+# ------------------------------------------------------------------------------
+metadata-files:
+  - metadata/common.yaml
+
+# ------------------------------------------------------------------------------
+# Filter
+# ------------------------------------------------------------------------------
+# filters:
+#   - filters/custom-filter.lua
+
+# ------------------------------------------------------------------------------
+# Reference Document (PowerPoint Template)
+# ------------------------------------------------------------------------------
+# Ein bestehendes PPTX-Dokument als Layout-Vorlage verwenden
+# reference-doc: templates/pptx/custom-template.pptx
+
+# ------------------------------------------------------------------------------
+# Markdown-Erweiterungen
+# ------------------------------------------------------------------------------
+from: markdown+smart+footnotes+definition_lists+fenced_divs+bracketed_spans
+
+# ------------------------------------------------------------------------------
+# Inhaltsverzeichnis
+# ------------------------------------------------------------------------------
+toc: false
+toc-depth: 2
+
+# ------------------------------------------------------------------------------
+# Weitere Optionen
+# ------------------------------------------------------------------------------
+# Ebene der Slides (1 = jede Überschrift H1 wird zu einer Folie)
+slide-level: 2
+
+# Inkrementelle Listen (jedes Item erscheint einzeln)
+incremental: false
+
+# ------------------------------------------------------------------------------
+# Bilder
+# ------------------------------------------------------------------------------
+# Standardgröße für Bilder (in Zoll)
+# dpi: 96
+
+# ------------------------------------------------------------------------------
+# Notizen
+# ------------------------------------------------------------------------------
+# Speaker Notes werden automatisch in die Notizen-Sektion eingefügt
+# Verwende in Markdown: ::: notes ... :::

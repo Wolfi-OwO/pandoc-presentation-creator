@@ -1,0 +1,83 @@
+# ==============================================================================
+# Dockerfile.base - Minimales Pandoc Base Image
+# ==============================================================================
+# Dieses Image enthält nur Pandoc und grundlegende Abhängigkeiten.
+# Es dient als Basis für spezialisierte Images und kann auch standalone verwendet
+# werden für einfache Markdown-Konvertierungen.
+#
+# Build:  docker build -f docker/Dockerfile.base -t pandoc-base:latest .
+# Usage:  docker run --rm -v $(pwd):/data pandoc-base slides.md -o output.html
+
+# ------------------------------------------------------------------------------
+# Build Stage: Pandoc Installation
+# ------------------------------------------------------------------------------
+FROM alpine:3.19 AS builder
+
+# Metadata
+LABEL maintainer="koflerphillip@outlook.com"
+LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.description="Minimal Pandoc base image for document conversion"
+
+# Build arguments
+ARG PANDOC_VERSION=3.1.11
+
+# Install build dependencies
+RUN apk add --no-cache \
+    wget \
+    ca-certificates
+
+# Download and install Pandoc
+RUN wget -q "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
+    && tar xzf "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
+    && mv "pandoc-${PANDOC_VERSION}/bin/pandoc" /usr/local/bin/ \
+    && rm -rf "pandoc-${PANDOC_VERSION}" "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
+
+# ------------------------------------------------------------------------------
+# Final Stage: Minimal Runtime Image
+# ------------------------------------------------------------------------------
+FROM alpine:3.19
+
+# Copy pandoc binary from builder
+COPY --from=builder /usr/local/bin/pandoc /usr/local/bin/pandoc
+
+# Install minimal runtime dependencies
+RUN apk add --no-cache \
+    # Grundlegende Abhängigkeiten
+    gmp \
+    libffi \
+    lua5.3 \
+    # Für bessere Schriftarten
+    fontconfig \
+    ttf-dejavu \
+    # Für HTTP-Requests (falls benötigt)
+    ca-certificates \
+    # Für bessere Performance
+    zlib
+
+# Erstelle non-root User für Sicherheit
+RUN addgroup -g 1000 pandoc && \
+    adduser -D -u 1000 -G pandoc pandoc
+
+# Arbeitsverzeichnis
+WORKDIR /data
+
+# Volume für Input/Output
+VOLUME ["/data"]
+
+# Wechsel zu non-root User
+USER pandoc
+
+# Entrypoint
+ENTRYPOINT ["pandoc"]
+
+# Default: Version anzeigen (wenn keine Argumente übergeben werden)
+CMD ["--version"]
+
+# ------------------------------------------------------------------------------
+# Image Informationen
+# ------------------------------------------------------------------------------
+# Size: ~40 MB
+# Base: Alpine Linux
+# Pandoc Version: 3.1.11
+# User: non-root (pandoc:1000)
+# Working Directory: /data

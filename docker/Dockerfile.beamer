@@ -1,0 +1,108 @@
+# ==============================================================================
+# Dockerfile.beamer - Beamer/LaTeX PDF-Präsentations-Image
+# ==============================================================================
+# Dieses Image enthält Pandoc + minimal LaTeX für Beamer-PDF-Präsentationen.
+# Optimiert für kleine Image-Größe mit nur den notwendigen LaTeX-Paketen.
+#
+# Build:  docker build -f docker/Dockerfile.beamer -t pandoc-beamer:latest .
+# Usage:  docker run --rm -v $(pwd):/data pandoc-beamer \
+#           -d defaults/beamer.yaml slides.md -o slides.pdf
+
+# ------------------------------------------------------------------------------
+# Build Stage 1: Pandoc Binary
+# ------------------------------------------------------------------------------
+FROM alpine:3.19 AS pandoc-builder
+
+ARG PANDOC_VERSION=3.1.11
+
+RUN apk add --no-cache wget ca-certificates \
+    && wget -q "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
+    && tar xzf "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
+    && mv "pandoc-${PANDOC_VERSION}/bin/pandoc" /usr/local/bin/ \
+    && rm -rf "pandoc-${PANDOC_VERSION}" "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
+
+# ------------------------------------------------------------------------------
+# Final Stage: LaTeX Runtime Image (Debian-based für bessere TeX-Unterstützung)
+# ------------------------------------------------------------------------------
+# Wir nutzen Debian slim statt Alpine, da LaTeX auf Debian besser funktioniert
+FROM debian:bookworm-slim
+
+# Metadata
+LABEL maintainer="koflerphillip@outlook.com"
+LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
+LABEL maintainer="koflerphillip@outlook.com"
+LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
+
+# Copy Pandoc from builder
+COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
+
+# Install minimal LaTeX + Beamer dependencies
+# Wir installieren nur das Nötigste, keine full texlive-full!
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    # Minimal LaTeX
+    texlive-latex-base \
+    texlive-latex-recommended \
+    # Beamer
+    texlive-latex-extra \
+    # Fonts
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    # XeLaTeX für bessere Schriftunterstützung
+    texlive-xetex \
+    # Zusätzliche Pakete für Präsentationen
+    texlive-pictures \
+    # Für Grafiken
+    ghostscript \
+    # Für Lua-Filter
+    lua5.3 \
+    # Cleaning up
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Erstelle non-root User
+RUN groupadd -g 1000 pandoc && \
+    useradd -m -u 1000 -g pandoc pandoc
+
+# Kopiere Projekt-Dateien (nur was für beamer benötigt wird)
+COPY --chown=pandoc:pandoc defaults/beamer.yaml /pandoc/defaults/
+COPY --chown=pandoc:pandoc metadata/ /pandoc/metadata/
+COPY --chown=pandoc:pandoc filters/ /pandoc/filters/
+COPY --chown=pandoc:pandoc includes/ /pandoc/includes/
+COPY --chown=pandoc:pandoc templates/beamer/ /pandoc/templates/beamer/
+
+# Arbeitsverzeichnis
+WORKDIR /data
+
+# Volume für Input/Output
+VOLUME ["/data"]
+
+# Wechsel zu non-root User
+USER pandoc
+
+# Environment Variables
+ENV PANDOC_DATA_DIR=/pandoc
+
+# Entrypoint
+ENTRYPOINT ["pandoc"]
+
+# Default: Version anzeigen
+CMD ["--version"]
+
+# ------------------------------------------------------------------------------
+# Image Informationen
+# ------------------------------------------------------------------------------
+# Size: ~250 MB (minimal LaTeX setup)
+# Base: Debian Bookworm Slim
+# Pandoc Version: 3.1.11
+# LaTeX: XeLaTeX + Beamer
+# Includes: Beamer defaults, filters, templates
+# User: non-root (pandoc:1000)
+# Working Directory: /data
+# Data Directory: /pandoc
+#
+# Note: Wenn Sie eine noch kleinere Image-Größe benötigen,
+# können Sie auf tinytex umsteigen (~150 MB), aber mit
+# eingeschränkter Paket-Auswahl.

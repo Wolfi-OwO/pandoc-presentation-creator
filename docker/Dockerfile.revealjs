@@ -1,0 +1,110 @@
+# ==============================================================================
+# Dockerfile.revealjs - Reveal.js Präsentations-Image
+# ==============================================================================
+# Dieses Image enthält Pandoc + Node.js + Reveal.js für interaktive
+# HTML-Präsentationen. Es ist optimiert für schnelle Web-Präsentationen.
+#
+# Build:  docker build -f docker/Dockerfile.revealjs -t pandoc-revealjs:latest .
+# Usage:  docker run --rm -v $(pwd):/data pandoc-revealjs \
+#           -d defaults/revealjs.yaml slides.md -o slides.html
+
+# ------------------------------------------------------------------------------
+# Build Stage 1: Pandoc Binary
+# ------------------------------------------------------------------------------
+FROM alpine:3.19 AS pandoc-builder
+
+ARG PANDOC_VERSION=3.1.11
+
+RUN apk add --no-cache wget ca-certificates \
+    && wget -q "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
+    && tar xzf "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz" \
+    && mv "pandoc-${PANDOC_VERSION}/bin/pandoc" /usr/local/bin/ \
+    && rm -rf "pandoc-${PANDOC_VERSION}" "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
+
+# ------------------------------------------------------------------------------
+# Build Stage 2: Node.js dependencies (optional für reveal.js extensions)
+# ------------------------------------------------------------------------------
+FROM node:20-alpine AS node-builder
+
+# Arbeitsverzeichnis für Node packages
+WORKDIR /app
+
+# Nur minimal benötigte Node-Pakete (optional, für erweiterte Features)
+# Hier können Sie reveal.js plugins oder tools hinzufügen
+RUN npm install -g reveal-md@6.0.0 || true
+
+# ------------------------------------------------------------------------------
+# Final Stage: Reveal.js Runtime Image
+# ------------------------------------------------------------------------------
+FROM alpine:3.19
+
+# Metadata
+LABEL maintainer="koflerphillip@outlook.com"
+LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.description="Pandoc with Reveal.js support for HTML presentations"
+
+# Copy Pandoc from builder
+COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
+
+# Copy Node.js (nur Runtime, keine Build-Tools)
+COPY --from=node-builder /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-builder /usr/lib /usr/lib
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    # Grundlegende Abhängigkeiten
+    gmp \
+    libffi \
+    lua5.3 \
+    # Schriftarten
+    fontconfig \
+    ttf-dejavu \
+    ttf-liberation \
+    # Web-Fonts Support
+    ca-certificates \
+    # Für bessere HTML-Verarbeitung
+    zlib \
+    libstdc++ \
+    # Optionale JavaScript-Unterstützung
+    npm
+
+# Erstelle non-root User
+RUN addgroup -g 1000 pandoc && \
+    adduser -D -u 1000 -G pandoc pandoc
+
+# Kopiere Projekt-Dateien (nur was für revealjs benötigt wird)
+COPY --chown=pandoc:pandoc defaults/revealjs.yaml /pandoc/defaults/
+COPY --chown=pandoc:pandoc metadata/ /pandoc/metadata/
+COPY --chown=pandoc:pandoc filters/ /pandoc/filters/
+COPY --chown=pandoc:pandoc includes/ /pandoc/includes/
+COPY --chown=pandoc:pandoc assets/ /pandoc/assets/
+
+# Arbeitsverzeichnis
+WORKDIR /data
+
+# Volume für Input/Output
+VOLUME ["/data"]
+
+# Wechsel zu non-root User
+USER pandoc
+
+# Environment Variables
+ENV PANDOC_DATA_DIR=/pandoc
+
+# Entrypoint (Pandoc mit Zugriff auf /pandoc Verzeichnis)
+ENTRYPOINT ["pandoc"]
+
+# Default: Version anzeigen
+CMD ["--version"]
+
+# ------------------------------------------------------------------------------
+# Image Informationen
+# ------------------------------------------------------------------------------
+# Size: ~80 MB
+# Base: Alpine Linux + Node.js
+# Pandoc Version: 3.1.11
+# Node Version: 20
+# Includes: Reveal.js defaults, filters, assets
+# User: non-root (pandoc:1000)
+# Working Directory: /data
+# Data Directory: /pandoc (templates, filters, etc.)

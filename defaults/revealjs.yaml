@@ -1,0 +1,138 @@
+# ==============================================================================
+# Pandoc Defaults für Reveal.js Präsentationen
+# ==============================================================================
+# Diese Datei definiert alle Standard-Einstellungen für Reveal.js-Präsentationen.
+# Sie kann mit: pandoc -d defaults/revealjs.yaml input.md -o output.html
+# aufgerufen werden.
+
+# ------------------------------------------------------------------------------
+# Output-Konfiguration
+# ------------------------------------------------------------------------------
+to: revealjs
+output-file: output/presentation.html
+
+# Standalone-Dokument mit allen notwendigen Abhängigkeiten
+standalone: true
+
+# ------------------------------------------------------------------------------
+# Reveal.js Spezifische Optionen
+# ------------------------------------------------------------------------------
+variables:
+  # Reveal.js Theme (black, white, league, beige, sky, night, serif, simple, solarized)
+  theme: black
+  
+  # Transitions (none, fade, slide, convex, concave, zoom)
+  transition: slide
+  
+  # Transition-Geschwindigkeit (default, fast, slow)
+  transition-speed: default
+  
+  # Hintergrund-Transition (none, fade, slide, convex, concave, zoom)
+  background-transition: fade
+  
+  # Präsentations-Steuerung
+  controls: true
+  controlsTutorial: true
+  controlsLayout: bottom-right
+  
+  # Fortschritts-Anzeige
+  progress: true
+  
+  # Slide-Nummer anzeigen
+  slideNumber: true
+  
+  # Hash-basierte URLs für Slides
+  hash: true
+  
+  # Navigation
+  keyboard: true
+  overview: true
+  center: true
+  touch: true
+  loop: false
+  rtl: false
+  
+  # Fragmente
+  fragments: true
+  
+  # Embed-Einstellungen
+  embedded: false
+  
+  # Speaker Notes anzeigen
+  showNotes: false
+  
+  # Auto-Slide (0 = deaktiviert)
+  autoSlide: 0
+  
+  # Mouse-Wheel Navigation
+  mouseWheel: false
+  
+  # Präsentations-Größe
+  width: 1920
+  height: 1080
+  margin: 0.04
+  minScale: 0.2
+  maxScale: 2.0
+  
+  # Code-Highlighting
+  highlight-style: monokai
+
+# ------------------------------------------------------------------------------
+# Metadata-Dateien
+# ------------------------------------------------------------------------------
+metadata-files:
+  - metadata/common.yaml
+
+# ------------------------------------------------------------------------------
+# Filter
+# ------------------------------------------------------------------------------
+# filters:
+#   - filters/custom-filter.lua
+
+# ------------------------------------------------------------------------------
+# Includes
+# ------------------------------------------------------------------------------
+include-in-header:
+  - includes/header/revealjs-custom.html
+
+include-after-body:
+  - includes/footer/revealjs-footer.html
+
+# ------------------------------------------------------------------------------
+# Template
+# ------------------------------------------------------------------------------
+# template: templates/revealjs/custom-template.html
+
+# ------------------------------------------------------------------------------
+# Markdown-Erweiterungen
+# ------------------------------------------------------------------------------
+from: markdown+emoji+smart+footnotes+definition_lists+fenced_divs+bracketed_spans
+
+# ------------------------------------------------------------------------------
+# Inhaltsverzeichnis
+# ------------------------------------------------------------------------------
+toc: false
+toc-depth: 2
+
+# ------------------------------------------------------------------------------
+# Code-Blöcke
+# ------------------------------------------------------------------------------
+listings: false
+highlight-style: monokai
+
+# ------------------------------------------------------------------------------
+# Mathematik
+# ------------------------------------------------------------------------------
+# Für mathematische Formeln
+html-math-method: mathjax
+
+# ------------------------------------------------------------------------------
+# Zusätzliche Ressourcen
+# ------------------------------------------------------------------------------
+css:
+  - assets/css/custom-revealjs.css
+
+# ------------------------------------------------------------------------------
+# Selbst-gehostete Reveal.js Version (optional)
+# ------------------------------------------------------------------------------
+# revealjs-url: https://unpkg.com/reveal.js@4.5.0/

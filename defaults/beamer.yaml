@@ -1,0 +1,122 @@
+# ==============================================================================
+# Pandoc Defaults für Beamer (LaTeX) Präsentationen
+# ==============================================================================
+# Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen.
+# Sie kann mit: pandoc -d defaults/beamer.yaml input.md -o output.pdf
+# aufgerufen werden.
+
+# ------------------------------------------------------------------------------
+# Output-Konfiguration
+# ------------------------------------------------------------------------------
+to: beamer
+output-file: output/presentation.pdf
+
+# Standalone-Dokument
+standalone: true
+
+# ------------------------------------------------------------------------------
+# PDF-Engine
+# ------------------------------------------------------------------------------
+# Mögliche Werte: pdflatex, xelatex, lualatex
+pdf-engine: xelatex
+
+# ------------------------------------------------------------------------------
+# Beamer Spezifische Optionen
+# ------------------------------------------------------------------------------
+variables:
+  # Beamer Theme (default, AnnArbor, Antibes, Bergen, Berkeley, Berlin, Boadilla,
+  # CambridgeUS, Copenhagen, Darmstadt, Dresden, Frankfurt, Goettingen, Hannover,
+  # Ilmenau, JuanLesPins, Luebeck, Madrid, Malmoe, Marburg, Montpellier, PaloAlto,
+  # Pittsburgh, Rochester, Singapore, Szeged, Warsaw)
+  theme: metropolis
+  
+  # Color Theme (default, albatross, beaver, beetle, crane, dolphin, dove, fly,
+  # lily, orchid, rose, seagull, seahorse, whale, wolverine)
+  colortheme: default
+  
+  # Font Theme (default, professionalfonts, serif, structurebold, structureitalicserif, structuresmallcapsserif)
+  fonttheme: default
+  
+  # Aspect Ratio (169 für 16:9, 1610 für 16:10, 149 für 14:9, 141 für 1.41:1, 54 für 5:4, 43 für 4:3, 32 für 3:2)
+  aspectratio: 169
+  
+  # Navigation Symbole anzeigen
+  navigation: horizontal
+  
+  # Section-Titel anzeigen
+  section-titles: true
+  
+  # Code-Highlighting
+  highlight-style: tango
+
+# ------------------------------------------------------------------------------
+# Metadata-Dateien
+# ------------------------------------------------------------------------------
+metadata-files:
+  - metadata/common.yaml
+
+# ------------------------------------------------------------------------------
+# Filter
+# ------------------------------------------------------------------------------
+# filters:
+#   - filters/custom-filter.lua
+
+# ------------------------------------------------------------------------------
+# Includes
+# ------------------------------------------------------------------------------
+include-in-header:
+  - includes/header/beamer-packages.tex
+
+# include-before-body:
+#   - includes/beamer-titlepage.tex
+
+# ------------------------------------------------------------------------------
+# Template
+# ------------------------------------------------------------------------------
+# template: templates/beamer/custom-template.tex
+
+# ------------------------------------------------------------------------------
+# Markdown-Erweiterungen
+# ------------------------------------------------------------------------------
+from: markdown+smart+footnotes+definition_lists+fenced_divs+bracketed_spans
+
+# ------------------------------------------------------------------------------
+# Inhaltsverzeichnis
+# ------------------------------------------------------------------------------
+toc: false
+toc-depth: 2
+
+# ------------------------------------------------------------------------------
+# Code-Blöcke
+# ------------------------------------------------------------------------------
+listings: true
+
+# ------------------------------------------------------------------------------
+# LaTeX-Optionen
+# ------------------------------------------------------------------------------
+# Zusätzliche LaTeX-Packages können hier eingebunden werden
+# header-includes:
+#   - \usepackage{booktabs}
+#   - \usepackage{longtable}
+
+# ------------------------------------------------------------------------------
+# Bibliographie (optional)
+# ------------------------------------------------------------------------------
+# bibliography: references.bib
+# csl: ieee.csl
+# cite-method: biblatex
+
+# ------------------------------------------------------------------------------
+# Tabellen und Abbildungen
+# ------------------------------------------------------------------------------
+# Tabellen und Bilder nummerieren
+number-sections: false
+
+# ------------------------------------------------------------------------------
+# Weitere Optionen
+# ------------------------------------------------------------------------------
+# Ebene der Slides (1 = jede Überschrift H1 wird zu einer Folie)
+slide-level: 2
+
+# Inkrementelle Listen (jedes Item erscheint einzeln)
+incremental: false
