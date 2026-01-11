@@ -107,12 +107,12 @@ test:beamer:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY_IMAGE/pandoc-beamer:latest
-    - mkdir -p test-output
+    - docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-beamer:latest mkdir -p /data/test-output
     - |
       for slide in slides/*.md; do
         filename=$(basename "$slide" .md)
         echo "Testing Beamer with $slide..."
-        docker run --rm -v $(pwd):/data $CI_REGISTRY_IMAGE/pandoc-beamer:latest \
+        docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-beamer:latest \
           -f markdown \
           -t beamer \
           --slide-level=2 \
@@ -142,12 +142,12 @@ test:revealjs:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
-    - mkdir -p test-output
+    - docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-revealjs:latest mkdir -p /data/test-output
     - |
       for slide in slides/*.md; do
         filename=$(basename "$slide" .md)
         echo "Testing Reveal.js with $slide..."
-        docker run --rm -v $(pwd):/data $CI_REGISTRY_IMAGE/pandoc-revealjs:latest \
+        docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-revealjs:latest \
           -f markdown \
           -t revealjs \
           --standalone \
