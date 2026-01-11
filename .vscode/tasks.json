@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Beamer Docker Image",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "build",
+        "-f",
+        "docker/Dockerfile.beamer",
+        "-t",
+        "pandoc-beamer:local",
+        "."
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Render Minimalist Presentation",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/data",
+        "--user",
+        "root",
+        "pandoc-beamer:local",
+        "--defaults",
+        "/opt/pandoc/defaults/beamer.yaml",
+        "/data/slides/Minimalist.md",
+        "-o",
+        "/data/output/presentation.pdf"
+      ],
+      "dependsOn": ["Build Beamer Docker Image"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Clean Output Directory",
+      "type": "shell",
+      "command": "rm",
+      "args": ["-rf", "output/*"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Local Tests",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-c", "mkdir -p output && docker run --rm -v $(pwd):/data --user root pandoc-beamer:local --defaults /opt/pandoc/defaults/beamer.yaml /data/slides/Minimalist.md -o /data/output/test-presentation.pdf && echo 'PDF generated successfully'"],
+      "dependsOn": ["Build Beamer Docker Image"],
+      "problemMatcher": []
+    }
+  ]
+}
