@@ -15,7 +15,8 @@ build-beamer:
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - docker build -f docker/Dockerfile.beamer \
+    - |
+      docker build -f docker/Dockerfile.beamer \
         -t "$CI_REGISTRY_IMAGE:latest" \
         -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
         .
