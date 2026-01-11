@@ -32,6 +32,7 @@ build-beamer:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - docker/**
+        - scripts/**
         - core/**
         - .gitlab-ci.yml
 
