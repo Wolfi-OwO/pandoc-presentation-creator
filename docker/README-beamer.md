@@ -36,6 +36,16 @@ docker run --rm -v $(pwd):/data \
   --pdf-engine=xelatex \
   -V theme=metropolis \
   -o presentation.pdf
+
+# Mit UBC-Preamble (Farbschema + Footer)
+docker run --rm -v $(pwd):/data \
+  yourusername/pandoc-presentation-beamer:latest \
+  --defaults /data/core/defaults/beamer-preamble.yaml \
+  /data/slides/Example.md \
+  -o /data/output/presentation_preamble.pdf
+
+# Shortcut-Skript (nutzt registries Image)
+./scripts/build-docker-preamble.sh slides/Example.md
 ```
 
 ## Features

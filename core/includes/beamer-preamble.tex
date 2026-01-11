@@ -1,0 +1,62 @@
+%%%%%%%%%%%%%color 
+\definecolor{UBCblue}{rgb}{0.04706, 0.13725, 0.26667} % UBC Blue (primary)
+\definecolor{UBCgrey}{rgb}{0.3686, 0.5255, 0.6235} % UBC Grey (secondary)
+
+\definecolor{orange}{RGB}{244,167,66}
+
+% Optional badge text: override via your own header includes if needed
+\newcommand{\footerbadge}{}
+
+\setbeamercolor{palette primary}{bg=UBCblue,fg=white}
+\setbeamercolor{palette secondary}{bg=UBCblue,fg=white}
+\setbeamercolor{palette tertiary}{bg=UBCblue,fg=white}
+\setbeamercolor{palette quaternary}{bg=UBCblue,fg=white}
+\setbeamercolor{structure}{fg=UBCblue} % itemize, enumerate, etc
+\setbeamercolor{section in toc}{fg=UBCblue} % TOC sections
+\setbeamercolor{footline}{bg=UBCblue,fg=white}
+
+%% change circle miniframes color
+\setbeamercolor{mini frame}{fg=orange, bg=UBCblue}
+
+%% Change subsection in footer color (author and institute color)
+\setbeamercolor{subsection in head/foot}{bg=UBCgrey,fg=white}
+
+%change ilmenau section dot color 
+\setbeamercolor{section in head/foot}{fg=orange} 
+
+%% Change the circle in miniframes to a box
+%\setbeamertemplate{mini frame}[box]
+%\setbeamertemplate{mini frame in current subsection}[box]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Footer: hide on title slide, single row with date | author | page numbers
+\newcommand{\footdate}{\ifcsname insertshortdate\endcsname\insertshortdate\fi}
+\newcommand{\frameofframes}{/}
+\newcommand{\setframeofframes}[1]{\renewcommand{\frameofframes}{#1}}
+\setframeofframes{of}
+\makeatletter
+\setbeamertemplate{footline}{%
+  \ifnum\insertframenumber=1
+    \relax % no footer on title slide
+  \else
+    \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1ex,leftskip=0.5cm,rightskip=0.5cm]{footline}%
+      {\usebeamerfont{title in head/foot}\footdate}%
+      \hfill{\usebeamerfont{author in head/foot}\insertshortauthor}%
+      \hfill{\usebeamerfont{title in head/foot}\insertframenumber\,\frameofframes\,\inserttotalframenumber}
+    \end{beamercolorbox}%
+  \fi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Remove subsection bar in mini frames
+\defbeamertemplate*{headline}{miniframes theme no subsection}
+{%
+  \begin{beamercolorbox}[colsep=1.5pt]{upper separation line head}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}{section in head/foot}
+    \vskip2pt\insertnavigation{\paperwidth}\vskip2pt
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[colsep=1.5pt]{lower separation line head}
+  \end{beamercolorbox}
+}
+
+% keep custom footline active (no override)
+\makeatother

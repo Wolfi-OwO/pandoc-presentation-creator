@@ -7,158 +7,52 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_BUILDKIT: 1
 
-# ==============================================================================
-# Stage 1: Build and Push Docker Images
-# ==============================================================================
-
-build:base:
+build-beamer:
   stage: build
   image: docker:latest
   services:
     - docker:dind
-  cache:
-    key: docker-base-$CI_COMMIT_REF_SLUG
-    paths:
-      - .docker-cache/
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - mkdir -p .docker-cache
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - docker build 
-        --cache-from $CI_REGISTRY_IMAGE/pandoc-base:latest 
-        --build-arg BUILDKIT_INLINE_CACHE=1 
-        -t $CI_REGISTRY_IMAGE/pandoc-base:latest 
-        -f docker/Dockerfile.base .
-    - docker push $CI_REGISTRY_IMAGE/pandoc-base:latest
+    - docker build -f docker/Dockerfile.beamer \
+        -t "$CI_REGISTRY_IMAGE:latest" \
+        -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
+        .
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   rules:
-    - changes:
-        - docker/Dockerfile.base
-        - core/**/*
     - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - docker/**
+        - core/**
+        - scripts/build_beamer.py
 
-build:beamer:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind
-  cache:
-    key: docker-beamer-$CI_COMMIT_REF_SLUG
-    paths:
-      - .docker-cache/
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - mkdir -p .docker-cache
-  script:
-    - docker pull $CI_REGISTRY_IMAGE/pandoc-beamer:latest || true
-    - docker build 
-        --cache-from $CI_REGISTRY_IMAGE/pandoc-beamer:latest 
-        --build-arg BUILDKIT_INLINE_CACHE=1 
-        -t $CI_REGISTRY_IMAGE/pandoc-beamer:latest 
-        -f docker/Dockerfile.beamer .
-    - docker push $CI_REGISTRY_IMAGE/pandoc-beamer:latest
-  rules:
-    - changes:
-        - docker/Dockerfile.beamer
-        - core/**/*
-    - if: $CI_COMMIT_BRANCH == "main"
-
-build:revealjs:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind
-  cache:
-    key: docker-revealjs-$CI_COMMIT_REF_SLUG
-    paths:
-      - .docker-cache/
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - mkdir -p .docker-cache
-  script:
-    - docker pull $CI_REGISTRY_IMAGE/pandoc-revealjs:latest || true
-    - docker build 
-        --cache-from $CI_REGISTRY_IMAGE/pandoc-revealjs:latest 
-        --build-arg BUILDKIT_INLINE_CACHE=1 
-        -t $CI_REGISTRY_IMAGE/pandoc-revealjs:latest 
-        -f docker/Dockerfile.revealjs .
-    - docker push $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
-  rules:
-    - changes:
-        - docker/Dockerfile.revealjs
-        - core/**/*
-    - if: $CI_COMMIT_BRANCH == "main"
-
-# ==============================================================================
-# Stage 2: Test Docker Images with Example Slides
-# ==============================================================================
-
-test:beamer:
+render-slides:
   stage: test
   image: docker:latest
   services:
     - docker:dind
-  cache:
-    key: test-cache-$CI_COMMIT_REF_SLUG
-    paths:
-      - test-output/
-  dependencies:
-    - build:beamer
+  needs: [build-beamer]
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - docker pull $CI_REGISTRY_IMAGE/pandoc-beamer:latest
-    - docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-beamer:latest mkdir -p /data/test-output
+    - mkdir -p test-output
+    - docker pull "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
     - |
-      for slide in slides/*.md; do
-        filename=$(basename "$slide" .md)
-        echo "Testing Beamer with $slide..."
-        docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-beamer:latest \
-          -f markdown \
-          -t beamer \
-          --slide-level=2 \
-          /data/$slide \
-          -o /data/test-output/${filename}-beamer.pdf
-      done
-    - ls -lh test-output/
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
+        --defaults /opt/pandoc/defaults/beamer.yaml \
+        /data/slides/Example.md \
+        -o /data/test-output/Example-beamer.pdf
+    - ls -lh test-output
   artifacts:
     paths:
-      - test-output/*.pdf
+      - test-output/Example-beamer.pdf
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-
-test:revealjs:
-  stage: test
-  image: docker:latest
-  services:
-    - docker:dind
-  cache:
-    key: test-cache-$CI_COMMIT_REF_SLUG
-    paths:
-      - test-output/
-  dependencies:
-    - build:revealjs
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $CI_REGISTRY_IMAGE/pandoc-revealjs:latest
-    - docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-revealjs:latest mkdir -p /data/test-output
-    - |
-      for slide in slides/*.md; do
-        filename=$(basename "$slide" .md)
-        echo "Testing Reveal.js with $slide..."
-        docker run --rm -v $(pwd):/data --user root $CI_REGISTRY_IMAGE/pandoc-revealjs:latest \
-          -f markdown \
-          -t revealjs \
-          --standalone \
-          --slide-level=2 \
-          /data/$slide \
-          -o /data/test-output/${filename}-revealjs.html
-      done
-    - ls -lh test-output/
-  artifacts:
-    paths:
-      - test-output/*.html
-    expire_in: 1 week
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - docker/**
+        - core/**
+        - scripts/build_beamer.py

@@ -1,137 +1,34 @@
-# ==============================================================================
-# Pandoc Defaults für Beamer (LaTeX) Präsentationen
-# ==============================================================================
-# Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen.
-# Metadaten können aus separaten YAML-Dateien eingebunden werden:
-# pandoc -d defaults/beamer.yaml --metadata-file metadata/oracle-tuning.yaml input.md -o output.pdf
+# Pandoc defaults for Beamer (baked into Docker image)
 
-# oder direkt in den Markdown YAML-Header:
-# pandoc -d defaults/beamer.yaml input.md -o output.pdf
-
-# Beispiele:
-# 1. Mit Defaults nur: pandoc -d defaults/beamer.yaml examples/themed-presentation.md
-# 2. Mit Metadata-Datei: pandoc -d defaults/beamer.yaml --metadata-file metadata/oracle-tuning.yaml examples/themed-presentation.md
-# 3. Mit Pandoc-Docker: docker run --rm -v $(pwd):/data pandoc-beamer -d /pandoc/defaults/beamer.yaml --metadata-file /data/metadata/oracle-tuning.yaml /data/examples/themed-presentation.md -o /data/output/oracle.pdf
-
-# ------------------------------------------------------------------------------
-# Output-Konfiguration
-# ------------------------------------------------------------------------------
+from: markdown
 to: beamer
-output-file: output/presentation.pdf
-
-# Standalone-Dokument
 standalone: true
-
-# ------------------------------------------------------------------------------
-# PDF-Engine
-# ------------------------------------------------------------------------------
-# Mögliche Werte: pdflatex, xelatex, lualatex
 pdf-engine: xelatex
+dpi: 300
+slide-level: 1
+data-dir: /opt/pandoc
+resource-path:
+  - /opt/pandoc
+  - /opt/pandoc/includes
+  - /opt/pandoc/assets
+  - /opt/pandoc/metadata
+  - .
+output-file: /data/output/presentation.pdf
 
-# ------------------------------------------------------------------------------
-# Beamer Spezifische Optionen
-# ------------------------------------------------------------------------------
+template: templates/default_mod.latex
+include-in-header:
+  - includes/beamer-preamble.tex
+
 variables:
-  # Beamer Theme (default, AnnArbor, Antibes, Bergen, Berkeley, Berlin, Boadilla,
-  # CambridgeUS, Copenhagen, Darmstadt, Dresden, Frankfurt, Goettingen, Hannover,
-  # Ilmenau, JuanLesPins, Luebeck, Madrid, Malmoe, Marburg, Montpellier, PaloAlto,
-  # Pittsburgh, Rochester, Singapore, Szeged, Warsaw)
   theme: Madrid
-  
-  # Color Theme (default, albatross, beaver, beetle, crane, dolphin, dove, fly,
-  # lily, orchid, rose, seagull, seahorse, whale, wolverine)
   colortheme: default
-  
-  # Font Theme (default, professionalfonts, serif, structurebold, structureitalicserif, structuresmallcapsserif)
   fonttheme: default
-  
-  # Aspect Ratio (169 für 16:9, 1610 für 16:10, 149 für 14:9, 141 für 1.41:1, 54 für 5:4, 43 für 4:3, 32 für 3:2)
-  aspectratio: 169
-  
-  # Navigation Symbole anzeigen
+  classoption:
+    - aspectratio=169
   navigation: horizontal
-  
-  # Section-Titel anzeigen
-  section-titles: true
-  
-  # Code-Highlighting
+  section-titles: false
   highlight-style: tango
 
-# ------------------------------------------------------------------------------
-# Metadata-Dateien (Basis)
-# ------------------------------------------------------------------------------
 metadata-files:
-  - metadata/common.yaml
+  - /opt/pandoc/metadata/common.yaml
 
-# Zusätzliche Metadata-Dateien können mit --metadata-file Parameter hinzugefügt werden
-
-# ------------------------------------------------------------------------------
-# Filter
-# ------------------------------------------------------------------------------
-# filters:
-#   - filters/custom-filter.lua
-
-# ------------------------------------------------------------------------------
-# Includes
-# ------------------------------------------------------------------------------
-include-in-header:
-  - includes/header/beamer-packages.tex
-  - includes/footer/beamer-footer.tex
-
-# Ensure resources (includes, footer) are found both locally and in Docker
-resource-path:
-  - .
-
-# include-before-body:
-#   - includes/beamer-titlepage.tex
-
-# ------------------------------------------------------------------------------
-# Template
-# ------------------------------------------------------------------------------
-# template: templates/beamer/custom-template.tex
-
-# ------------------------------------------------------------------------------
-# Markdown-Erweiterungen
-# ------------------------------------------------------------------------------
-from: markdown+smart+footnotes+definition_lists+fenced_divs+bracketed_spans
-
-# ------------------------------------------------------------------------------
-# Inhaltsverzeichnis
-# ------------------------------------------------------------------------------
-toc: false
-toc-depth: 2
-
-# ------------------------------------------------------------------------------
-# Code-Blöcke
-# ------------------------------------------------------------------------------
-listings: true
-
-# ------------------------------------------------------------------------------
-# LaTeX-Optionen
-# ------------------------------------------------------------------------------
-# Zusätzliche LaTeX-Packages können hier eingebunden werden
-# header-includes:
-#   - \usepackage{booktabs}
-#   - \usepackage{longtable}
-
-# ------------------------------------------------------------------------------
-# Bibliographie (optional)
-# ------------------------------------------------------------------------------
-# bibliography: references.bib
-# csl: ieee.csl
-# cite-method: biblatex
-
-# ------------------------------------------------------------------------------
-# Tabellen und Abbildungen
-# ------------------------------------------------------------------------------
-# Tabellen und Bilder nummerieren
-number-sections: false
-
-# ------------------------------------------------------------------------------
-# Weitere Optionen
-# ------------------------------------------------------------------------------
-# Ebene der Slides (1 = jede Überschrift H1 wird zu einer Folie)
-slide-level: 2
-
-# Inkrementelle Listen (jedes Item erscheint einzeln)
-incremental: false

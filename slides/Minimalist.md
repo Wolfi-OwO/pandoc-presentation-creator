@@ -1,7 +1,7 @@
 ---
 title: "Minimal-Beispiel"
 author: "Ihr Name"
-date: 2026-01-10
+date: "11.01.2026"
 ---
 
 # Erste Folie
@@ -16,8 +16,6 @@ Dies ist eine minimale Präsentation.
 - Punkt 2
 - Punkt 3
 
----
-
 # Dritte Folie
 
 ```bash
@@ -27,4 +25,8 @@ pandoc -d defaults/revealjs.yaml examples/minimal.md
 
 ---
 
-# Vielen Dank
+\begin{center}
+\vspace*{\fill}
+{\Huge Vielen Dank für Ihre Aufmerksamkeit}
+\vspace*{\fill}
+\end{center}

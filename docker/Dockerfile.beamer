@@ -102,10 +102,13 @@ RUN groupadd -g 1000 pandoc && \
     useradd -m -u 1000 -g pandoc pandoc
 
 # Kopiere Projekt-Dateien (nur was für beamer benötigt wird)
-COPY --chown=pandoc:pandoc core/defaults/beamer.yaml /pandoc/defaults/beamer.yaml
-COPY --chown=pandoc:pandoc core/metadata/ /pandoc/metadata/
-COPY --chown=pandoc:pandoc core/filters/ /pandoc/filters/
-COPY --chown=pandoc:pandoc core/includes/ /pandoc/includes/
+COPY --chown=pandoc:pandoc core/defaults/ /opt/pandoc/defaults/
+COPY --chown=pandoc:pandoc core/metadata/ /opt/pandoc/metadata/
+COPY --chown=pandoc:pandoc core/filters/ /opt/pandoc/filters/
+COPY --chown=pandoc:pandoc core/includes/ /opt/pandoc/includes/
+COPY --chown=pandoc:pandoc core/templates/ /opt/pandoc/templates/
+COPY --chown=pandoc:pandoc core/assets/ /opt/pandoc/assets/
+COPY --chown=pandoc:pandoc scripts/build_beamer.py /opt/pandoc/scripts/build_beamer.py
 
 # Arbeitsverzeichnis
 WORKDIR /data
@@ -117,7 +120,7 @@ VOLUME ["/data"]
 USER pandoc
 
 # Environment Variables
-ENV PANDOC_DATA_DIR=/pandoc
+ENV PANDOC_DATA_DIR=/opt/pandoc
 
 # Entrypoint
 ENTRYPOINT ["pandoc"]

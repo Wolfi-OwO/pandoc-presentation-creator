@@ -1,0 +1,20 @@
+# Pandoc defaults for Beamer with UBC-styled preamble
+from: markdown
+to: beamer
+standalone: true
+pdf-engine: xelatex
+dpi: 300
+slide-level: 2
+highlight-style: tango
+output-file: /data/output/presentation_preamble.pdf
+
+template: templates/default_mod.latex
+include-in-header:
+  - templates/preamble.tex
+
+variables:
+  classoption:
+    - aspectratio=169
+  theme: Madrid
+  navigation: horizontal
+  section-titles: true
