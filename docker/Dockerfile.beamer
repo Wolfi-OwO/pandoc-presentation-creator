@@ -6,7 +6,8 @@
 # ensuring stability.
 #
 # Build: docker build -f docker/Dockerfile.beamer -t pandoc-beamer:latest .
-# Usage: docker run --rm -v $(pwd):/data pandoc-beamer python3 scripts/build.py --input slides.md
+# Usage: docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
+#          --defaults /opt/pandoc/defaults/beamer.yaml /data/slides/example.md -o /data/output/example.pdf
 
 # Stage 1: Pandoc Binary Extractor
 FROM alpine:3.19 AS pandoc-fetcher
@@ -18,9 +19,17 @@ RUN apk add --no-cache wget && \
 # Stage 2: Final Runtime (Debian-based for LaTeX compatibility)
 FROM debian:bookworm-slim
 
+# Build arguments for metadata
+ARG BUILD_DATE
+ARG VCS_REF
+ARG PANDOC_VERSION=3.1.11
+
 LABEL maintainer="koflerphillip@outlook.com"
 LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
 LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.revision="${VCS_REF}"
+LABEL org.opencontainers.image.version="${PANDOC_VERSION}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 

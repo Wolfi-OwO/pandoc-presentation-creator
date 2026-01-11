@@ -1,46 +1,297 @@
-# Universal Presentation Engine (UPE)
+# Pandoc Presentation Creator
 
-An industrial-grade documentation factory for generating Beamer, Reveal.js, and PPTX from Markdown.
+**Version:** 2.0
+**Status:** Production Ready
+**Maintainer:** Philip Kofler (<koflerphillip@outlook.com>)
 
-## 🏗 Directory Structure
+A 100% containerized Pandoc-based presentation system for generating professional PDF presentations using Beamer/LaTeX. All resources are baked into the Docker image for maximum reproducibility and zero external dependencies.
 
-- **core/**: Central configuration, templates, and filters.
-- **themes/**: Asset libraries (logos, specific configs).
-- **slides/**: User content (.md).
-- **docker/**: The Omni-Container definition.
-- **scripts/**: The Python logic engine.
+---
 
-## 🚀 How to Build
+## [>>] Quick Start
 
-### Using Docker (Recommended)
-
-Run the container mounting your current directory:
+### 1. Build the Container Locally
 
 ```bash
-docker run --rm -v $(pwd):/data my-registry/upe:latest \
-    --input slides/Project-Demo.md \
-    --format all \
-    --theme default
+docker build -f docker/Dockerfile.beamer -t pandoc-beamer:local .
 ```
 
-### Local Development
+### 2. Pull from GitLab Registry (Alternative)
 
-1. Ensure Pandoc and Python 3 are installed.
-2. Run the wrapper:
-   ```bash
-   python3 scripts/build.py --input slides/Project-Demo.md
-   ```
+```bash
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest
+```
 
-## ⚙️ Configuration
+### 3. Render a Presentation
 
-- **Global Defaults**: Edit `core/metadata/defaults.yaml`.
-- **Per-Slide Config**: Add YAML metadata header to your .md files.
-- **Themes**: Create a folder in `themes/` with a `config.yaml`.
+```bash
+# Using local image
+docker run --rm \
+  -v $(pwd):/data \
+  --user root \
+  pandoc-beamer:local \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  /data/slides/Minimalist.md \
+  -o /data/output/presentation.pdf
 
-## 🔄 CI/CD
+# Or using registry image
+docker run --rm \
+  -v $(pwd):/data \
+  --user root \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  /data/slides/Minimalist.md \
+  -o /data/output/presentation.pdf
+```
 
-The `.gitlab-ci.yml` automatically:
-1. Builds the Docker image if changed.
-2. Lints Markdown.
-3. Compiles all slides in `slides/`.
-4. Deploys HTML/PDFs to GitLab Pages.
+### 4. VS Code Integration
+
+Open project in VS Code and press **Ctrl+Shift+B** to build and render.
+
+---
+
+## [DIR] Directory Structure
+
+```
+.
+├── core/               # Baked into container at /opt/pandoc/
+│   ├── defaults/      # Pandoc YAML configurations
+│   ├── metadata/      # Common metadata (author, date)
+│   ├── templates/     # LaTeX templates
+│   ├── includes/      # LaTeX preambles and headers
+│   ├── filters/       # Lua/Python filters
+│   └── assets/        # Images, logos, fonts
+├── slides/             # Your markdown presentations
+├── docker/             # Container definitions
+├── .vscode/            # VS Code configuration (tasks, settings)
+├── info/               # Documentation
+├── scripts/            # Build helpers (baked into container)
+└── output/             # Generated PDFs (gitignored)
+```
+
+---
+
+## [*] Key Features
+
+### 100% Containerization
+
+- All resources baked into `/opt/pandoc/` at build time
+- No external dependencies needed at runtime
+- Single command to render any presentation
+
+### Standardized IDE Configuration
+
+- One-click build with `Ctrl+Shift+B` (VS Code)
+- Auto-install recommended extensions
+- Consistent editor settings across team
+
+### Clean CI/CD Integration
+
+- Automated testing of all templates
+- Auto-generated documentation (HELP.pdf)
+- Reproducible builds with SHA tagging
+
+### UBC-Themed Beamer
+
+- Madrid theme with custom UBC color scheme
+- Custom footer: Date | Author | Page x of y
+- Austrian date format support
+- 16:9 aspect ratio
+
+---
+
+## [DOC] Documentation
+
+### Comprehensive Help Guide
+
+- **Web:** [info/help.md](info/help.md)
+- **PDF:** Generate with:
+
+  ```bash
+  docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
+    /data/info/help.md -o /data/HELP.pdf \
+    --from markdown --to pdf --pdf-engine xelatex -V geometry:margin=2cm --toc
+  ```
+
+### Additional Resources
+
+- **[info/filesystem-consolidation.md](info/filesystem-consolidation.md)**: Consolidation plan and verification steps
+- **[info/REFACTOR-SUMMARY.md](info/REFACTOR-SUMMARY.md)**: Architectural refactoring summary
+- **[docker/README-beamer.md](docker/README-beamer.md)**: Docker-specific documentation
+
+---
+
+## [CFG] Configuration
+
+### Default Settings
+
+Edit `core/defaults/beamer.yaml` for global configuration:
+
+```yaml
+slide-level: 1              # H1 = new slide
+section-titles: false       # Disable section separators
+theme: Madrid               # Beamer theme
+aspectratio: 169            # 16:9 widescreen
+pdf-engine: xelatex         # LaTeX engine
+```
+
+### Per-Presentation Metadata
+
+Add YAML front matter to your `.md` files:
+
+```yaml
+---
+title: "My Presentation"
+author: "Your Name"
+date: "11.01.2026"
+---
+```
+
+Or override at runtime:
+
+```bash
+docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata title="Custom Title" \
+  --metadata author="Jane Doe" \
+  /data/slides/YourPresentation.md \
+  -o /data/output/CustomPresentation.pdf
+```
+
+---
+
+## [CI] CI/CD Pipeline
+
+GitLab CI automatically:
+
+1. **Build Stage**: Builds Docker image and pushes to registry
+   - Tags: `beamer-latest`, `beamer-<commit-sha>`
+
+2. **Test Stage**: Renders all test presentations
+   - Tests Example.md and Minimalist.md
+   - Validates Python build helper
+
+3. **Docs Stage**: Auto-generates HELP.pdf
+
+See [.gitlab-ci.yml](.gitlab-ci.yml) for details.
+
+---
+
+## [ADV] Advanced Usage
+
+### Python Build Helper
+
+For complex builds with metadata overrides:
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  --user root \
+  --entrypoint python3 \
+  pandoc-beamer:local \
+  /opt/pandoc/scripts/build_beamer.py \
+  --input /data/slides/YourPresentation.md \
+  --output /data/output/YourPresentation.pdf \
+  --metadata footerbadge=CONFIDENTIAL
+```
+
+### Custom Defaults File
+
+Create `config/custom.yaml`:
+
+```yaml
+metadata:
+  title: "My Custom Presentation"
+  institute: "University of Vienna"
+```
+
+Run with:
+
+```bash
+docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --defaults /data/config/custom.yaml \
+  /data/slides/YourPresentation.md \
+  -o /data/output/YourPresentation.pdf
+```
+
+---
+
+## [TST] Verification
+
+Test the containerized workflow:
+
+```bash
+chmod +x scripts/verify-container-workflow.sh
+./scripts/verify-container-workflow.sh
+```
+
+This script verifies:
+
+- Docker image builds correctly
+- All templates render successfully
+- Python helper works with metadata overrides
+- Baked resources are accessible in container
+
+---
+
+## [BUG] Troubleshooting
+
+### Common Issues
+
+1. **LaTeX Error: File not found**
+   - Ensure `resource-path` in `beamer.yaml` includes all necessary directories
+
+2. **Extra Empty Slides**
+   - Set `slide-level: 1` and use `#` for slides (not `---` separators)
+
+3. **Permission Denied in Container**
+   - Use `--user root` for volume-mounted outputs
+
+See [info/help.md](info/help.md) for comprehensive troubleshooting guide.
+
+---
+
+## [DEP] Dependencies
+
+### Container Runtime
+
+- Docker (tested with 20.10+)
+
+### Baked into Container
+
+- Pandoc 3.1.11
+- XeLaTeX (TeXLive)
+- Python 3 with YAML support
+- Beamer theme (Madrid)
+- UBC color scheme
+- Custom LaTeX templates and filters
+
+---
+
+## [+] Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run verification tests
+5. Submit a merge request
+
+---
+
+## [LIC] License
+
+See LICENSE file for details.
+
+---
+
+## [@] Contact
+
+- **Maintainer:** Philip Kofler
+- **Email:** <koflerphillip@outlook.com>
+- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+- **Issues:** Use GitLab Issues for bug reports and feature requests
+
+---
+
+*Last updated: January 2026*

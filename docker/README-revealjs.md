@@ -40,12 +40,12 @@ docker run --rm -v $(pwd):/data \
 
 ## Features
 
-- ✅ Vorinstallierte Reveal.js defaults
-- ✅ Custom CSS Templates
-- ✅ Lua-Filter (Boxen, Spalten)
-- ✅ Mathematische Formeln (MathJax)
-- ✅ Code-Highlighting
-- ✅ Speaker Notes
+- [OK] Vorinstallierte Reveal.js defaults
+- [OK] Custom CSS Templates
+- [OK] Lua-Filter (Boxen, Spalten)
+- [OK] Mathematische Formeln (MathJax)
+- [OK] Code-Highlighting
+- [OK] Speaker Notes
 
 ## Dokumentation
 

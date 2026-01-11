@@ -1,12 +1,16 @@
 stages:
   - build
   - test
+  - docs
 
 variables:
   CI_REGISTRY_IMAGE: registry.gitlab.com/woofi4/public/pandoc-presentation-creator
   DOCKER_DRIVER: overlay2
   DOCKER_BUILDKIT: 1
 
+# ==============================================================================
+# Build Stage: Container Image
+# ==============================================================================
 build-beamer:
   stage: build
   image: docker:latest
@@ -17,19 +21,24 @@ build-beamer:
   script:
     - |
       docker build -f docker/Dockerfile.beamer \
-        -t "$CI_REGISTRY_IMAGE:latest" \
-        -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
+        -t "$CI_REGISTRY_IMAGE:beamer-latest" \
+        -t "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
         .
-    - docker push "$CI_REGISTRY_IMAGE:latest"
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE:beamer-latest"
+    - docker push "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - docker/**
         - core/**
-        - scripts/build_beamer.py
+        - .gitlab-ci.yml
 
-render-slides:
+# ==============================================================================
+# Test Stage: Template Rendering
+# ==============================================================================
+test-beamer-templates:
   stage: test
   image: docker:latest
   services:
@@ -39,21 +48,102 @@ render-slides:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - mkdir -p test-output
-    - docker pull "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
+    # Test Example.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Example.md \
         -o /data/test-output/Example-beamer.pdf
+    # Test Minimalist.md
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        --defaults /opt/pandoc/defaults/beamer.yaml \
+        /data/slides/Minimalist.md \
+        -o /data/test-output/Minimalist-beamer.pdf
     - ls -lh test-output
+    - echo "[OK] All templates rendered successfully"
   artifacts:
     paths:
-      - test-output/Example-beamer.pdf
+      - test-output/*.pdf
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - docker/**
         - core/**
-        - scripts/build_beamer.py
+        - slides/**
+        - .gitlab-ci.yml
+
+# ==============================================================================
+# Test Stage: Python Build Helper
+# ==============================================================================
+test-build-helper:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  needs: [build-beamer]
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - mkdir -p test-output
+    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
+    # Test Python helper with metadata override
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        --entrypoint python3 \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        /opt/pandoc/scripts/build_beamer.py \
+        --input /data/slides/Minimalist.md \
+        --output /data/test-output/helper-test.pdf \
+        --metadata footerbadge=CI-TEST
+    - ls -lh test-output/helper-test.pdf
+    - echo "[OK] Build helper validated"
+  artifacts:
+    paths:
+      - test-output/helper-test.pdf
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - docker/**
+        - core/**
+        - .gitlab-ci.yml
+
+# ==============================================================================
+# Docs Stage: Auto-generate Documentation
+# ==============================================================================
+generate-docs:
+  stage: docs
+  image: docker:latest
+  services:
+    - docker:dind
+  needs: [build-beamer]
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
+    # Generate help documentation as PDF
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        /data/info/help.md \
+        -o /data/HELP.pdf \
+        --from markdown \
+        --to pdf \
+        --pdf-engine=xelatex \
+        -V geometry:margin=2cm \
+        --toc
+    - ls -lh HELP.pdf
+  artifacts:
+    paths:
+      - HELP.pdf
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - info/**
+        - .gitlab-ci.yml

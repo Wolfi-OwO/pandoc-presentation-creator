@@ -50,13 +50,13 @@ docker run --rm -v $(pwd):/data \
 
 ## Features
 
-- ✅ Vorinstallierte Beamer defaults
-- ✅ Minimal LaTeX Setup (optimierte Größe)
-- ✅ XeLaTeX + PDFLaTeX Support
-- ✅ Beamer Themes & Color Themes
-- ✅ LaTeX-Pakete-Integration
-- ✅ Mathematische Formeln
-- ✅ TikZ-Grafiken
+- [OK] Vorinstallierte Beamer defaults
+- [OK] Minimal LaTeX Setup (optimierte Größe)
+- [OK] XeLaTeX + PDFLaTeX Support
+- [OK] Beamer Themes & Color Themes
+- [OK] LaTeX-Pakete-Integration
+- [OK] Mathematische Formeln
+- [OK] TikZ-Grafiken
 
 ## Dokumentation
 
@@ -73,6 +73,6 @@ Vollständige Dokumentation: [GitLab Repository](https://gitlab.com/woofi4/publi
 - [pandoc-presentation-base](https://hub.docker.com/r/yourusername/pandoc-presentation-base) - Basis-Image
 - [pandoc-presentation-revealjs](https://hub.docker.com/r/yourusername/pandoc-presentation-revealjs) - HTML-Präsentationen
 
-## ⚠️ Hinweis
+## [!] Hinweis
 
 Dieses Image ist größer (~250 MB) aufgrund der LaTeX-Dependencies. Für minimale Image-Größe verwenden Sie base oder revealjs Images.

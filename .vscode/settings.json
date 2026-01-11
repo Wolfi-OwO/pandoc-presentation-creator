@@ -38,9 +38,5 @@
   },
 
   "markdown.preview.breaks": true,
-  "markdown.preview.typographer": true,
-
-  "yaml.schemas": {
-    "https://json.schemastore.org/gitlab-ci.json": ".gitlab-ci.yml"
-  }
+  "markdown.preview.typographer": true
 }
