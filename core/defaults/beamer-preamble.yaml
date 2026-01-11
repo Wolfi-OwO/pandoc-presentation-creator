@@ -1,3 +1,6 @@
+# NOTE: If you see a schema warning in VS Code, it is safe to ignore.
+# This file is a Pandoc defaults YAML, not an Ansible or Kubernetes config.
+#
 # Pandoc defaults for Beamer with UBC-styled preamble
 from: markdown
 to: beamer
