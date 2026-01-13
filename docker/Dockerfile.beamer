@@ -140,7 +140,7 @@ CMD ["--version"]
 # ------------------------------------------------------------------------------
 # Image Informationen
 # ------------------------------------------------------------------------------
-# Size: ~250 MB (minimal LaTeX setup)
+# Size: ~1.5 GB (minimal LaTeX setup)
 # Base: Debian Bookworm Slim
 # Pandoc Version: 3.1.11
 # LaTeX: XeLaTeX + Beamer
