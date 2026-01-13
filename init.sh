@@ -66,10 +66,9 @@ to: $FORMAT
 standalone: true
 slide-level: 2
 
-metadata:
-  title: "$TITLE"
-  author: "$AUTHOR"
-  date: "$(date +%Y-%m-%d)"
+title: "$TITLE"
+author: "$AUTHOR"
+date: "$(date +%d.%m.%Y)"
 
 variables:
   theme: $THEME
@@ -148,7 +147,8 @@ Run this command to build your slides:
 docker run --rm \\
   -v \$(pwd):/data \\
   registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest \\
-  --defaults /data/config/config.yaml \\
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \\
   /data/slides/Example.md \\
   -o /data/output/presentation.${OUTPUT_EXT}
 \`\`\`
@@ -175,7 +175,8 @@ Your presentation will be generated as: \`output/presentation.${OUTPUT_EXT}\`
 docker run --rm \\
   -v \$(pwd):/data \\
   registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-${IMAGE_TYPE}:latest \\
-  --defaults /data/config/config.yaml \\
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \\
   /data/slides/Example.md \\
   -o /data/output/my-presentation.${OUTPUT_EXT}
 \`\`\`
@@ -185,7 +186,9 @@ docker run --rm \\
 docker run --rm \\
   -v \$(pwd):/data \\
   registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest \\
-  --defaults /data/config/config.yaml \\
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \\
+  --metadata-file=/data/config/config_2.yaml \\
   /data/slides/intro.md /data/slides/main.md /data/slides/conclusion.md \\
   -o /data/output/full-presentation.${OUTPUT_EXT}
 \`\`\`
@@ -195,7 +198,7 @@ docker run --rm \\
 docker run --rm \\
   -v \$(pwd):/data \\
   registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest \\
-  --defaults /data/config/config.yaml \\
+  --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata title="My Custom Title" \\
   /data/slides/Example.md \\
   -o /data/output/presentation.${OUTPUT_EXT}

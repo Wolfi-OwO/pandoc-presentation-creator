@@ -29,6 +29,8 @@ variables:
   section-titles: false
   highlight-style: tango
 
+filters:
+  - /opt/pandoc/filters/additional-metadata.lua
+
 metadata-files:
   - /opt/pandoc/metadata/common.yaml
-
