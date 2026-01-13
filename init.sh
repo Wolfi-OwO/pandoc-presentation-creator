@@ -147,7 +147,7 @@ Run this command to build your slides:
 \`\`\`bash
 docker run --rm \\
   -v \$(pwd):/data \\
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-${IMAGE_TYPE}:latest \\
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest \\
   --defaults /data/config/config.yaml \\
   /data/slides/Example.md \\
   -o /data/output/presentation.${OUTPUT_EXT}
@@ -184,7 +184,7 @@ docker run --rm \\
 \`\`\`bash
 docker run --rm \\
   -v \$(pwd):/data \\
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-${IMAGE_TYPE}:latest \\
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest \\
   --defaults /data/config/config.yaml \\
   /data/slides/intro.md /data/slides/main.md /data/slides/conclusion.md \\
   -o /data/output/full-presentation.${OUTPUT_EXT}
@@ -194,7 +194,7 @@ docker run --rm \\
 \`\`\`bash
 docker run --rm \\
   -v \$(pwd):/data \\
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-${IMAGE_TYPE}:latest \\
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest \\
   --defaults /data/config/config.yaml \\
   --metadata title="My Custom Title" \\
   /data/slides/Example.md \\
@@ -228,7 +228,7 @@ GITIGNORE
 # Step 8: Pull Docker Image from Registry
 echo ""
 echo "Configuring Docker image from registry..."
-DOCKER_IMAGE="registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-${IMAGE_TYPE}:latest"
+DOCKER_IMAGE="registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest"
 
 if command -v docker &> /dev/null; then
     echo -e "${BLUE}Pulling Docker image from registry...${NC}"
