@@ -50,13 +50,6 @@ test-beamer-templates:
   script:
     - mkdir -p test-output
     - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
-    # Test Example.md
-    - |
-      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
-        --defaults /opt/pandoc/defaults/beamer.yaml \
-        /data/slides/Example.md \
-        -o /data/test-output/Example-beamer.pdf
     # Test Minimalist.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
@@ -64,6 +57,13 @@ test-beamer-templates:
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Minimalist.md \
         -o /data/test-output/Minimalist-beamer.pdf
+    # Test Project-Demo.md
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        --defaults /opt/pandoc/defaults/beamer.yaml \
+        /data/slides/Project-Demo.md \
+        -o /data/test-output/Project-Demo-beamer.pdf
     - ls -lh test-output
     - echo "[OK] All templates rendered successfully"
   artifacts:
