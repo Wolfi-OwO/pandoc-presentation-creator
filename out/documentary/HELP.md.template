@@ -1,0 +1,66 @@
+# Quick Start Guide
+
+## Build Your Presentation
+
+Run this command to build your slides:
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \
+  /data/slides/Example.md \
+  -o /data/output/presentation.OUTPUT_EXT_PLACEHOLDER
+```
+
+## Output
+
+Your presentation will be generated as: `output/presentation.OUTPUT_EXT_PLACEHOLDER`
+
+## Editing
+
+1. **Edit content**: Modify `slides/Example.md` with your content
+2. **Change settings**: Update `config/config.yaml` (theme, metadata, etc.)
+3. **Rebuild**: Run the docker command above
+
+## Available Docker Images
+
+- `pandoc-beamer:latest` - For PDF (Beamer) output
+- `pandoc-revealjs:latest` - For HTML (Reveal.js) output
+
+## Advanced Usage
+
+### Custom Output Name
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-IMAGE_TYPE_PLACEHOLDER:latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \
+  /data/slides/Example.md \
+  -o /data/output/my-presentation.OUTPUT_EXT_PLACEHOLDER
+```
+
+### Multiple Input Files
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \
+  --metadata-file=/data/config/config_2.yaml \
+  /data/slides/intro.md /data/slides/main.md /data/slides/conclusion.md \
+  -o /data/output/full-presentation.OUTPUT_EXT_PLACEHOLDER
+```
+
+### Override Metadata
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata title="My Custom Title" \
+  /data/slides/Example.md \
+  -o /data/output/presentation.OUTPUT_EXT_PLACEHOLDER
+```

@@ -1,0 +1,11 @@
+# Pandoc Configuration
+to: FORMAT_PLACEHOLDER
+standalone: true
+slide-level: 2
+
+title: "TITLE_PLACEHOLDER"
+author: "AUTHOR_PLACEHOLDER"
+date: "DATE_PLACEHOLDER"
+
+variables:
+  theme: THEME_PLACEHOLDER
