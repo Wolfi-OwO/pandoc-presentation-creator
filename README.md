@@ -52,7 +52,7 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ## [DIR] Directory Structure
 
-```
+```text
 .
 ├── core/               # Baked into container at /opt/pandoc/
 │   ├── defaults/      # Pandoc YAML configurations
@@ -70,6 +70,13 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 ```
 
 ---
+
+## [*] Init Example Presentation
+
+```bash
+cd <your-directory>
+curl -sSL https://gitlab.com/.../init.sh | bash # Inits the presentation in the current dir
+```
 
 ## [*] Key Features
 
@@ -294,4 +301,4 @@ See LICENSE file for details.
 
 ---
 
-*Last updated: January 2026*
+***Last updated: January 2026***
