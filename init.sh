@@ -138,15 +138,6 @@ else
     echo "Docker not found. Please install Docker to use this project."
 fi
 
-# Step 9: Initialize git (optional)
-echo ""
-if [ ! -d .git ]; then
-    git init 2>/dev/null
-    git add . 2>/dev/null
-    git commit -m "Initial commit: Presentation project setup" 2>/dev/null
-    echo -e "${GREEN}Git repository initialized${NC}"
-fi
-
 rm -rf out/*
 
 echo ""
