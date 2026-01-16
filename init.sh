@@ -91,17 +91,22 @@ fi
 
 # Copy and substitute config.yaml
 cp "${TEMPLATE_DIR}/config.yaml.template" config/config.yaml
-sed -i "s/FORMAT_PLACEHOLDER/$FORMAT/g" config/config.yaml
-sed -i "s/TITLE_PLACEHOLDER/$TITLE/g" config/config.yaml
-sed -i "s/AUTHOR_PLACEHOLDER/$AUTHOR/g" config/config.yaml
-sed -i "s/DATE_PLACEHOLDER/$(date +%d.%m.%Y)/g" config/config.yaml
-sed -i "s/THEME_PLACEHOLDER/$THEME/g" config/config.yaml
+# Escape special characters for sed
+TITLE_ESC=$(printf '%s\n' "$TITLE" | sed 's:[/\&]:\\&:g;$!s/$/\\/')
+AUTHOR_ESC=$(printf '%s\n' "$AUTHOR" | sed 's:[/\&]:\\&:g;$!s/$/\\/')
+sed -i.bak "s/FORMAT_PLACEHOLDER/$FORMAT/g" config/config.yaml
+sed -i.bak "s/TITLE_PLACEHOLDER/$TITLE_ESC/g" config/config.yaml
+sed -i.bak "s/AUTHOR_PLACEHOLDER/$AUTHOR_ESC/g" config/config.yaml
+sed -i.bak "s/DATE_PLACEHOLDER/$(date +%d.%m.%Y)/g" config/config.yaml
+sed -i.bak "s/THEME_PLACEHOLDER/$THEME/g" config/config.yaml
+rm -f config/config.yaml.bak
 
 # Copy and substitute build.env
 cp "${TEMPLATE_DIR}/build.env.template" config/build.env
-sed -i "s/FORMAT_PLACEHOLDER/$FORMAT/g" config/build.env
-sed -i "s/IMAGE_TYPE_PLACEHOLDER/$IMAGE_TYPE/g" config/build.env
-sed -i "s/OUTPUT_EXT_PLACEHOLDER/$OUTPUT_EXT/g" config/build.env
+sed -i.bak "s/FORMAT_PLACEHOLDER/$FORMAT/g" config/build.env
+sed -i.bak "s/IMAGE_TYPE_PLACEHOLDER/$IMAGE_TYPE/g" config/build.env
+sed -i.bak "s/OUTPUT_EXT_PLACEHOLDER/$OUTPUT_EXT/g" config/build.env
+rm -f config/build.env.bak
 
 echo -e "${GREEN}Configuration saved to config/config.yaml${NC}"
 
@@ -111,9 +116,10 @@ echo "Creating example presentation..."
 
 # Copy and substitute Example.md
 cp "${TEMPLATE_DIR}/Example.md.template" slides/Example.md
-sed -i "s/TITLE_PLACEHOLDER/$TITLE/g" slides/Example.md
-sed -i "s/AUTHOR_PLACEHOLDER/$AUTHOR/g" slides/Example.md
-sed -i "s/THEME_PLACEHOLDER/$THEME/g" slides/Example.md
+sed -i.bak "s/TITLE_PLACEHOLDER/$TITLE_ESC/g" slides/Example.md
+sed -i.bak "s/AUTHOR_PLACEHOLDER/$AUTHOR_ESC/g" slides/Example.md
+sed -i.bak "s/THEME_PLACEHOLDER/$THEME/g" slides/Example.md
+rm -f slides/Example.md.bak
 
 echo -e "${GREEN}Example presentation created at slides/Example.md${NC}"
 
@@ -123,8 +129,9 @@ echo "Creating documentation..."
 
 # Copy and substitute HELP.md
 cp "${TEMPLATE_DIR}/HELP.md.template" HELP.md
-sed -i "s/IMAGE_TYPE_PLACEHOLDER/$IMAGE_TYPE/g" HELP.md
-sed -i "s/OUTPUT_EXT_PLACEHOLDER/$OUTPUT_EXT/g" HELP.md
+sed -i.bak "s/IMAGE_TYPE_PLACEHOLDER/$IMAGE_TYPE/g" HELP.md
+sed -i.bak "s/OUTPUT_EXT_PLACEHOLDER/$OUTPUT_EXT/g" HELP.md
+rm -f HELP.md.bak
 
 # Copy README.md
 cp "${TEMPLATE_DIR}/README.md.template" README.md
@@ -161,6 +168,8 @@ if [ ! -d .git ]; then
         echo -e "${GREEN}Git repository initialized${NC}"
     fi
 fi
+
+rm -rf out/*
 
 echo ""
 echo -e "${GREEN}Setup Complete!${NC}"

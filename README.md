@@ -75,7 +75,7 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ```bash
 cd <your-directory>
-curl -sSL https://gitlab.com/.../init.sh | bash # Inits the presentation in the current dir
+curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Inits the presentation in the current dir
 ```
 
 ## [*] Key Features
