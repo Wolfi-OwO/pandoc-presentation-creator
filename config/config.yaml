@@ -1,3 +1,14 @@
-title: "Custom Title from Config"
-author: "Custom Author"
-date: "2026-01-13"
+# Pandoc Defaults Configuration
+to: beamer
+standalone: true
+slide-level: 2
+
+# Presentation Metadata
+metadata:
+  title: "Example Presentation"
+  author: "Your Name"
+  date: "2026-01-16"
+
+# Theme Settings
+variables:
+  theme: Madrid

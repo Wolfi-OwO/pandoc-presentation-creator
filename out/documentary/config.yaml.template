@@ -1,11 +1,14 @@
-# Pandoc Configuration
+# Pandoc Defaults Configuration
 to: FORMAT_PLACEHOLDER
 standalone: true
 slide-level: 2
 
-title: "TITLE_PLACEHOLDER"
-author: "AUTHOR_PLACEHOLDER"
-date: "DATE_PLACEHOLDER"
+# Presentation Metadata
+metadata:
+  title: "TITLE_PLACEHOLDER"
+  author: "AUTHOR_PLACEHOLDER"
+  date: "DATE_PLACEHOLDER"
 
+# Theme Settings
 variables:
   theme: THEME_PLACEHOLDER

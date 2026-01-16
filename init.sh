@@ -15,34 +15,18 @@ REPO_URL="https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/mai
 PROJECT_DIR="$(pwd)"
 
 echo -e "${BLUE}--- Pandoc Presentation Project Bootstrap ---${NC}"
-
-# Step 1: Configuration
 echo ""
-echo "Please configure your project metadata."
-read -p "Project Title: " TITLE
-read -p "Author Name: " AUTHOR
-
+echo "Setting up project with default configuration..."
+echo "You can customize settings in config/config.yaml after setup."
 echo ""
-echo "Select Output Format:"
-echo "1) Beamer (PDF slides)"
-echo "2) Reveal.js (HTML slides)"
-echo "3) PowerPoint (PPTX)"
-read -p "Enter choice [1]: " FORMAT_OPT
 
-case $FORMAT_OPT in
-  2) FORMAT="revealjs"
-     IMAGE_TYPE="revealjs"
-     OUTPUT_EXT="html"
-     THEME="black" ;;
-  3) FORMAT="pptx"
-     IMAGE_TYPE="beamer"
-     OUTPUT_EXT="pptx"
-     THEME="default" ;;
-  *) FORMAT="beamer"
-     IMAGE_TYPE="beamer"
-     OUTPUT_EXT="pdf"
-     THEME="Madrid" ;;
-esac
+# Step 1: Use Default Configuration
+TITLE="My Presentation"
+AUTHOR="Author Name"
+FORMAT="beamer"
+IMAGE_TYPE="beamer"
+OUTPUT_EXT="pdf"
+THEME="Madrid"
 
 # Step 2: Create Only User-Facing Directory Structure
 echo ""
@@ -91,12 +75,9 @@ fi
 
 # Copy and substitute config.yaml
 cp "${TEMPLATE_DIR}/config.yaml.template" config/config.yaml
-# Escape special characters for sed
-TITLE_ESC=$(printf '%s\n' "$TITLE" | sed 's:[/\&]:\\&:g;$!s/$/\\/')
-AUTHOR_ESC=$(printf '%s\n' "$AUTHOR" | sed 's:[/\&]:\\&:g;$!s/$/\\/')
 sed -i.bak "s/FORMAT_PLACEHOLDER/$FORMAT/g" config/config.yaml
-sed -i.bak "s/TITLE_PLACEHOLDER/$TITLE_ESC/g" config/config.yaml
-sed -i.bak "s/AUTHOR_PLACEHOLDER/$AUTHOR_ESC/g" config/config.yaml
+sed -i.bak "s/TITLE_PLACEHOLDER/$TITLE/g" config/config.yaml
+sed -i.bak "s/AUTHOR_PLACEHOLDER/$AUTHOR/g" config/config.yaml
 sed -i.bak "s/DATE_PLACEHOLDER/$(date +%d.%m.%Y)/g" config/config.yaml
 sed -i.bak "s/THEME_PLACEHOLDER/$THEME/g" config/config.yaml
 rm -f config/config.yaml.bak
@@ -116,8 +97,8 @@ echo "Creating example presentation..."
 
 # Copy and substitute Example.md
 cp "${TEMPLATE_DIR}/Example.md.template" slides/Example.md
-sed -i.bak "s/TITLE_PLACEHOLDER/$TITLE_ESC/g" slides/Example.md
-sed -i.bak "s/AUTHOR_PLACEHOLDER/$AUTHOR_ESC/g" slides/Example.md
+sed -i.bak "s/TITLE_PLACEHOLDER/$TITLE/g" slides/Example.md
+sed -i.bak "s/AUTHOR_PLACEHOLDER/$AUTHOR/g" slides/Example.md
 sed -i.bak "s/THEME_PLACEHOLDER/$THEME/g" slides/Example.md
 rm -f slides/Example.md.bak
 
@@ -160,13 +141,10 @@ fi
 # Step 9: Initialize git (optional)
 echo ""
 if [ ! -d .git ]; then
-    read -p "Initialize git repository? [Y/n]: " INIT_GIT
-    if [ "$INIT_GIT" != "n" ]; then
-        git init
-        git add .
-        git commit -m "Initial commit: Presentation project setup"
-        echo -e "${GREEN}Git repository initialized${NC}"
-    fi
+    git init 2>/dev/null
+    git add . 2>/dev/null
+    git commit -m "Initial commit: Presentation project setup" 2>/dev/null
+    echo -e "${GREEN}Git repository initialized${NC}"
 fi
 
 rm -rf out/*
@@ -175,11 +153,13 @@ echo ""
 echo -e "${GREEN}Setup Complete!${NC}"
 echo ""
 echo "Your project structure:"
-echo "  config/      - Configuration files"
-echo "  slides/      - Your markdown presentations"
-echo "  output/      - Generated PDFs and outputs"
+echo "  config/config.yaml  - Edit this to set title, author, theme"
+echo "  slides/Example.md   - Edit this to create your presentation"
+echo "  output/             - Generated PDFs will appear here"
 echo ""
-echo "Next steps:"
-echo "1. Edit slides/Example.md"
-echo "2. See HELP.md for build instructions"
-echo "3. Docker image includes: templates, filters, build scripts, themes"
+echo "Customize your presentation:"
+echo "1. Edit config/config.yaml to set your title and author"
+echo "2. Edit slides/Example.md to write your content"
+echo "3. See HELP.md for build commands"
+echo ""
+echo "Docker image includes: templates, filters, build scripts, themes"
