@@ -18,6 +18,6 @@ include-in-header:
 variables:
   classoption:
     - aspectratio=169
-  theme: Madrid
+  theme: Singapore
   navigation: horizontal
   section-titles: true
