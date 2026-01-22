@@ -4,11 +4,6 @@ standalone: true
 slide-level: 2
 
 # Presentation Metadata
-metadata:
-  title: "TITLE_PLACEHOLDER"
-  author: "AUTHOR_PLACEHOLDER"
-  date: "DATE_PLACEHOLDER"
-
-# Theme Settings
-variables:
-  theme: THEME_PLACEHOLDER
+title: "TITLE_PLACEHOLDER"
+author: "AUTHOR_PLACEHOLDER"
+date: "DATE_PLACEHOLDER"

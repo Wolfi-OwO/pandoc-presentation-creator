@@ -58,6 +58,7 @@ if [ ! -d "$TEMPLATE_DIR" ]; then
         "config.yaml.template"
         "build.env.template"
         "Example.md.template"
+        "Themed-Feature.md.template"
         "HELP.md.template"
         "README.md.template"
         "gitignore.template"

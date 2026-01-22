@@ -1,9 +1,3 @@
----
-title: "Minimal-Beispiel"
-author: "Ihr Name"
-date: "11.01.2026"
----
-
 # Erste Folie
 
 Dies ist eine minimale Präsentation.

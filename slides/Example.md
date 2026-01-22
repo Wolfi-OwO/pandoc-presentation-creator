@@ -1,11 +1,3 @@
----
-title: "Example Presentation"
-subtitle: "Created with Pandoc Presentation Creator"
-author: "Your Name"
-date: \today
-theme: "Madrid"
----
-
 # Introduction
 
 ## Welcome

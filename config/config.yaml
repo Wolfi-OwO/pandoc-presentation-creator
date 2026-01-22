@@ -4,11 +4,7 @@ standalone: true
 slide-level: 2
 
 # Presentation Metadata
-metadata:
-  title: "Example Presentation"
-  author: "Your Name"
-  date: "2026-01-16"
-
-# Theme Settings
-variables:
-  theme: Madrid
+title: "Angewandte Mathematik"
+subtitle: "Wahrscheinlichkeitsrechnung"
+author: "Lauchart Manuel, Palle Felix und Kofler Phillip"
+date: \today
