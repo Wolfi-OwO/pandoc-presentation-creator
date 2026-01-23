@@ -13,6 +13,11 @@ variables:
   - core/**
   - scripts/**
 
+.example_presentation_changes: &example_presentation_changes
+  - slides/**
+  - docs/**
+  - .gitlab-ci.yml
+
 # ==============================================================================
 # Build Stage: Container Image
 # ==============================================================================
@@ -114,7 +119,6 @@ test-build-helper:
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_TAG
-      changes:
-        - slides/**
-        - docs/**
-        - .gitlab-ci.yml
+      changes: *example_presentation_changes
+    - if: $CI_COMMIT_REF_NAME == "main"
+      changes: *example_presentation_changes
