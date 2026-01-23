@@ -27,15 +27,15 @@ build-beamer:
     - |
       docker build -f docker/Dockerfile.beamer \
         -t "$CI_REGISTRY_IMAGE:beamer-latest" \
-        -t "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        -t "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG" \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        --build-arg VCS_REF=$CI_COMMIT_TAG \
         .
     - docker push "$CI_REGISTRY_IMAGE:beamer-latest"
-    - docker push "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
   rules:
     # Rebuild when image-affecting files change
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
       changes: *image_changes
 
     # Otherwise, don't run at all
@@ -56,18 +56,18 @@ test-beamer-templates:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - mkdir -p test-output
-    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
+    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
     # Test Minimalist.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Minimalist.md \
         -o /data/test-output/Minimalist-beamer.pdf
     # Test Project-Demo.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Project-Demo.md \
         -o /data/test-output/Project-Demo-beamer.pdf
@@ -78,7 +78,7 @@ test-beamer-templates:
       - test-output/*.pdf
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
       changes: *image_changes
     - when: never
 
@@ -97,11 +97,11 @@ test-build-helper:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - mkdir -p test-output
-    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
+    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
         --entrypoint python3 \
-        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA" \
+        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG" \
         /opt/pandoc/scripts/build_beamer.py \
         --input /data/slides/Minimalist.md \
         --output /data/test-output/helper-test.pdf \
@@ -113,7 +113,7 @@ test-build-helper:
       - test-output/helper-test.pdf
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
       changes:
         - slides/**
         - docs/**
