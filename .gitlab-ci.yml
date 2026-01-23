@@ -44,7 +44,7 @@ test-beamer-templates:
   image: docker:latest
   services:
     - docker:dind
-  needs: [build-beamer]
+  needs: [build-beamer:optional]
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
@@ -86,7 +86,7 @@ test-build-helper:
   image: docker:latest
   services:
     - docker:dind
-  needs: [build-beamer]
+  needs: [build-beamer:optional]
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
