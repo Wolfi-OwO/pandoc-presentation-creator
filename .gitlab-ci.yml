@@ -89,13 +89,14 @@ test-build-helper:
   image: docker:latest
   services:
     - docker:dind
-  needs: [build-beamer:optional]
+  needs:
+    - job: build-beamer
+      optional: true
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - mkdir -p test-output
     - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
-    # Test Python helper with metadata override
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
         --entrypoint python3 \
