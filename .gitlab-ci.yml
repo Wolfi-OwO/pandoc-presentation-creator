@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - docs
+  - release
 
 variables:
   CI_REGISTRY_IMAGE: registry.gitlab.com/woofi4/public/pandoc-presentation-creator
@@ -122,3 +123,49 @@ test-build-helper:
       changes: *example_presentation_changes
     - if: $CI_COMMIT_REF_NAME == "main"
       changes: *example_presentation_changes
+# ==============================================================================
+# Release Stage: Create GitLab Release
+# ==============================================================================
+create_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: build-beamer
+      optional: true
+    - job: test-beamer-templates
+      optional: true
+    - job: test-build-helper
+      optional: true
+  script:
+    - echo "Creating release for tag $CI_COMMIT_TAG"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Release $CI_COMMIT_TAG"
+    description: |
+      ## Pandoc Presentation Creator - Release $CI_COMMIT_TAG
+
+      ### Docker Images
+      - Beamer: `$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG`
+      - Beamer (latest): `$CI_REGISTRY_IMAGE:beamer-latest`
+
+      ### Usage
+      ```bash
+      docker pull $CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG
+      docker run --rm -v $(pwd):/data --user root \
+        $CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG \
+        --defaults /opt/pandoc/defaults/beamer.yaml \
+        /data/slides/your-presentation.md \
+        -o /data/output/presentation.pdf
+      ```
+
+      ### Test Artifacts
+      See the attached PDF files generated during CI testing.
+    assets:
+      links:
+        - name: "Docker Image: beamer-$CI_COMMIT_TAG"
+          url: "https://$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
+          link_type: image
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual # Manual trigger - click "Play" when you want to create the release
+  allow_failure: false
