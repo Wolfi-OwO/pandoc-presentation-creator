@@ -8,6 +8,11 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_BUILDKIT: 1
 
+.image_changes: &image_changes
+  - docker/**
+  - core/**
+  - scripts/**
+
 # ==============================================================================
 # Build Stage: Container Image
 # ==============================================================================
@@ -29,12 +34,12 @@ build-beamer:
     - docker push "$CI_REGISTRY_IMAGE:beamer-latest"
     - docker push "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_SHA"
   rules:
+    # Rebuild when image-affecting files change
     - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        - docker/**
-        - scripts/**
-        - core/**
-        - .gitlab-ci.yml
+      changes: *image_changes
+
+    # Otherwise, don't run at all
+    - when: never
 
 # ==============================================================================
 # Test Stage: Template Rendering
@@ -44,7 +49,8 @@ test-beamer-templates:
   image: docker:latest
   services:
     - docker:dind
-  needs: [build-beamer:optional]
+  needs:
+    - job: build-beamer
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
@@ -72,11 +78,8 @@ test-beamer-templates:
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        - docker/**
-        - core/**
-        - slides/**
-        - .gitlab-ci.yml
+      changes: *image_changes
+    - when: never
 
 # ==============================================================================
 # Test Stage: Python Build Helper
@@ -110,6 +113,6 @@ test-build-helper:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
-        - docker/**
-        - core/**
+        - slides/**
+        - docs/**
         - .gitlab-ci.yml
