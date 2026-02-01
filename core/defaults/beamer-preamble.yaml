@@ -1,8 +1,22 @@
+# ==============================================================================
+# Pandoc Defaults für Beamer mit UBC-Styled Preamble
+# ==============================================================================
+# Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen
+# mit benutzerdefinierter Preamble.
+# Sie kann mit: pandoc -d defaults/beamer-preamble.yaml input.md -o output.pdf
+# aufgerufen werden.
+#
 # NOTE: If you see a schema warning in VS Code, it is safe to ignore.
 # This file is a Pandoc defaults YAML, not an Ansible or Kubernetes config.
-#
-# Pandoc defaults for Beamer with UBC-styled preamble
+
+# ------------------------------------------------------------------------------
+# Input-Format
+# ------------------------------------------------------------------------------
 from: markdown
+
+# ------------------------------------------------------------------------------
+# Output-Konfiguration
+# ------------------------------------------------------------------------------
 to: beamer
 standalone: true
 pdf-engine: xelatex
@@ -11,10 +25,16 @@ slide-level: 2
 highlight-style: tango
 output-file: /data/output/presentation_preamble.pdf
 
+# ------------------------------------------------------------------------------
+# Templates & Includes
+# ------------------------------------------------------------------------------
 template: templates/default_mod.latex
 include-in-header:
   - templates/preamble.tex
 
+# ------------------------------------------------------------------------------
+# Beamer Theme & Variables
+# ------------------------------------------------------------------------------
 variables:
   classoption:
     - aspectratio=169

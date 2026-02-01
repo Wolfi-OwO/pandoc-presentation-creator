@@ -17,9 +17,24 @@
     }
   },
 
-  "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
-    "editor.tabSize": 2
+
+  "yaml.schemas": {
+    ".vscode/schemas/pandoc-metadata.json": [
+      "metadata.yaml",
+      "templates/metadata.yaml.template",
+      "**/metadata.yaml",
+      "**/defaults/*.yaml"
+    ]
+  },
+  "yaml.format.enable": true,
+  "yaml.validate": true,
+  "yaml.customTags": [
+    "!include scalar",
+    "!reference sequence"
+  ],
+  "files.associations": {
+    "metadata.yaml": "yaml",
+    "*.yaml.template": "yaml"
   },
 
   "[dockerfile]": {

@@ -1,11 +1,29 @@
-# Pandoc defaults for Beamer (baked into Docker image)
+# ==============================================================================
+# Pandoc Defaults für Beamer Präsentationen
+# ==============================================================================
+# Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen.
+# Sie ist für die Verwendung im Docker-Image optimiert und wird direkt eingebunden.
+# Sie kann mit: pandoc -d defaults/beamer.yaml input.md -o output.pdf
+# aufgerufen werden.
 
+# ------------------------------------------------------------------------------
+# Input-Format
+# ------------------------------------------------------------------------------
 from: markdown
+
+# ------------------------------------------------------------------------------
+# Output-Konfiguration
+# ------------------------------------------------------------------------------
 to: beamer
 standalone: true
 pdf-engine: xelatex
 dpi: 300
 slide-level: 1
+output-file: /data/output/presentation.pdf
+
+# ------------------------------------------------------------------------------
+# Datenverzeichnis und Ressourcenpfade
+# ------------------------------------------------------------------------------
 data-dir: /opt/pandoc
 resource-path:
   - /opt/pandoc
@@ -13,12 +31,17 @@ resource-path:
   - /opt/pandoc/assets
   - /opt/pandoc/metadata
   - .
-output-file: /data/output/presentation.pdf
 
+# ------------------------------------------------------------------------------
+# Templates & Includes
+# ------------------------------------------------------------------------------
 template: templates/default_mod.latex
 include-in-header:
   - includes/beamer-preamble.tex
 
+# ------------------------------------------------------------------------------
+# Beamer Theme & Variables
+# ------------------------------------------------------------------------------
 variables:
   theme: Madrid
   colortheme: default
@@ -29,8 +52,14 @@ variables:
   section-titles: false
   highlight-style: tango
 
+# ------------------------------------------------------------------------------
+# Filter
+# ------------------------------------------------------------------------------
 filters:
   - /opt/pandoc/filters/additional-metadata.lua
 
+# ------------------------------------------------------------------------------
+# Metadata-Dateien
+# ------------------------------------------------------------------------------
 metadata-files:
   - /opt/pandoc/metadata/common.yaml

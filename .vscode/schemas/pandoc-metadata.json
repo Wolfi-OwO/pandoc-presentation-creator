@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pandoc Metadata Configuration",
+  "description": "Schema for Pandoc document metadata YAML files",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Document title",
+      "default": "Documentation"
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Document subtitle"
+    },
+    "author": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "array", "items": {"type": "string"}}
+      ],
+      "description": "Document author(s)"
+    },
+    "date": {
+      "type": "string",
+      "description": "Document date (leave empty for automatic date)"
+    },
+    "abstract": {
+      "type": "string",
+      "description": "Document abstract or summary"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Document keywords for metadata"
+    },
+    "lang": {
+      "type": "string",
+      "description": "Document language (e.g., en-US, de-DE, fr-FR)",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "default": "en-US"
+    },
+    "documentclass": {
+      "type": "string",
+      "enum": ["scrartcl", "scrreprt", "scrbook", "article", "report", "book"],
+      "description": "LaTeX document class",
+      "default": "scrartcl"
+    },
+    "classoption": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "array", "items": {"type": "string"}}
+      ],
+      "description": "Document class options"
+    },
+    "mainfont": {
+      "type": "string",
+      "description": "Main text font",
+      "default": "Liberation Serif"
+    },
+    "sansfont": {
+      "type": "string",
+      "description": "Sans-serif font",
+      "default": "Liberation Sans"
+    },
+    "monofont": {
+      "type": "string",
+      "description": "Monospace font for code",
+      "default": "Liberation Mono"
+    },
+    "fontsize": {
+      "type": "string",
+      "pattern": "^\\d+(pt|em|rem)$",
+      "description": "Base font size",
+      "default": "11pt"
+    },
+    "linestretch": {
+      "type": ["string", "number"],
+      "description": "Line spacing multiplier",
+      "default": "1.15"
+    },
+    "papersize": {
+      "type": "string",
+      "enum": ["a4", "a5", "letter", "legal", "executive"],
+      "description": "Paper size",
+      "default": "a4"
+    },
+    "geometry": {
+      "oneOf": [
+        {"type": "string"},
+        {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        {
+          "type": "object",
+          "properties": {
+            "margin": {"type": "string"},
+            "left": {"type": "string"},
+            "right": {"type": "string"},
+            "top": {"type": "string"},
+            "bottom": {"type": "string"}
+          }
+        }
+      ],
+      "description": "Page geometry settings"
+    },
+    "linkcolor": {
+      "type": "string",
+      "description": "Color for internal links",
+      "default": "blue"
+    },
+    "urlcolor": {
+      "type": "string",
+      "description": "Color for external URLs",
+      "default": "blue"
+    },
+    "citecolor": {
+      "type": "string",
+      "description": "Color for citations",
+      "default": "brown"
+    },
+    "toccolor": {
+      "type": "string",
+      "description": "Color for table of contents links",
+      "default": "black"
+    },
+    "toc": {
+      "type": "boolean",
+      "description": "Include table of contents",
+      "default": true
+    },
+    "toc-title": {
+      "type": "string",
+      "description": "Title for table of contents",
+      "default": "Table of Contents"
+    },
+    "toc-depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6,
+      "description": "Depth of table of contents",
+      "default": 3
+    },
+    "lof": {
+      "type": "boolean",
+      "description": "Include list of figures",
+      "default": false
+    },
+    "lot": {
+      "type": "boolean",
+      "description": "Include list of tables",
+      "default": false
+    },
+    "numbersections": {
+      "type": "boolean",
+      "description": "Number sections",
+      "default": true
+    },
+    "secnumdepth": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 6,
+      "description": "Depth of section numbering",
+      "default": 3
+    },
+    "logo": {
+      "type": "string",
+      "description": "Path to logo image"
+    },
+    "titlepage": {
+      "type": "boolean",
+      "description": "Create a title page",
+      "default": false
+    },
+    "header-left": {
+      "type": "string",
+      "description": "Left header text"
+    },
+    "header-center": {
+      "type": "string",
+      "description": "Center header text"
+    },
+    "header-right": {
+      "type": "string",
+      "description": "Right header text"
+    },
+    "footer-left": {
+      "type": "string",
+      "description": "Left footer text"
+    },
+    "footer-center": {
+      "type": "string",
+      "description": "Center footer text"
+    },
+    "footer-right": {
+      "type": "string",
+      "description": "Right footer text"
+    },
+    "listings": {
+      "type": "boolean",
+      "description": "Use listings package for code blocks",
+      "default": true
+    },
+    "listings-no-page-break": {
+      "type": "boolean",
+      "description": "Prevent page breaks in code listings"
+    },
+    "code-block-font-size": {
+      "type": "string",
+      "description": "Font size for code blocks"
+    },
+    "tables": {
+      "type": "boolean",
+      "description": "Enable table support"
+    },
+    "graphics": {
+      "type": "boolean",
+      "description": "Enable graphics support"
+    },
+    "links-as-notes": {
+      "type": "boolean",
+      "description": "Print URLs as footnotes"
+    },
+    "book": {
+      "type": "boolean",
+      "description": "Book style (two-sided)"
+    },
+    "bibliography": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "array", "items": {"type": "string"}}
+      ],
+      "description": "Bibliography file(s)"
+    },
+    "csl": {
+      "type": "string",
+      "description": "Citation style (CSL file)"
+    },
+    "reference-section-title": {
+      "type": "string",
+      "description": "Title for references section"
+    }
+  },
+  "additionalProperties": true
+}
