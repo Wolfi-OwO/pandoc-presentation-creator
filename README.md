@@ -3,9 +3,7 @@
 [![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
 [![latest-tag](https://img.shields.io/gitlab/v/tag/woofi4/public/pandoc-presentation-creator)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/tags)
 
-**Version:** 2.0
-**Status:** Production Ready
-**Maintainer:** Philip Kofler (<koflerphillip@outlook.com>)
+**Maintainer:** Phillip Kofler (<koflerphillip@outlook.com>)
 
 A 100% containerized Pandoc-based presentation system for generating professional PDF presentations using Beamer/LaTeX. All resources are baked into the Docker image for maximum reproducibility and zero external dependencies.
 
