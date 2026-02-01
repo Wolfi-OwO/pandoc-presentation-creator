@@ -16,16 +16,6 @@ workflow:
     - if: $CI_COMMIT_TAG
     - when: never
 
-.image_changes: &image_changes
-  - docker/**
-  - core/**
-  - scripts/**
-
-.example_presentation_changes: &example_presentation_changes
-  - slides/**
-  - docs/**
-  - .gitlab-ci.yml
-
 # ==============================================================================
 # Build Stage: Container Image
 # ==============================================================================
@@ -61,11 +51,8 @@ build-beamer:
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *image_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *image_changes
     - if: $CI_COMMIT_TAG
-      changes: *image_changes
 
 # ==============================================================================
 # Build Stage: Reveal.js Image
@@ -102,11 +89,8 @@ build-revealjs:
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *image_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *image_changes
     - if: $CI_COMMIT_TAG
-      changes: *image_changes
 
 # ==============================================================================
 # Build Stage: Base Image
@@ -143,11 +127,8 @@ build-base:
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *image_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *image_changes
     - if: $CI_COMMIT_TAG
-      changes: *image_changes
 
 # ==============================================================================
 # Test Stage: Template Rendering
@@ -159,7 +140,6 @@ test-beamer-templates:
     - docker:dind
   needs:
     - job: build-beamer
-      optional: true
       artifacts: true
   before_script:
     - |
@@ -193,11 +173,8 @@ test-beamer-templates:
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *image_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *image_changes
     - if: $CI_COMMIT_TAG
-      changes: *image_changes
 
 # ==============================================================================
 # Test Stage: Python Build Helper
@@ -209,7 +186,6 @@ test-build-helper:
     - docker:dind
   needs:
     - job: build-beamer
-      optional: true
       artifacts: true
   before_script:
     - |
@@ -237,11 +213,8 @@ test-build-helper:
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *example_presentation_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *example_presentation_changes
     - if: $CI_COMMIT_TAG
-      changes: *example_presentation_changes
 
 # ==============================================================================
 # Test Stage: Reveal.js Rendering
@@ -253,7 +226,6 @@ test-revealjs-templates:
     - docker:dind
   needs:
     - job: build-revealjs
-      optional: true
       artifacts: true
   before_script:
     - |
@@ -279,11 +251,8 @@ test-revealjs-templates:
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *example_presentation_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *example_presentation_changes
     - if: $CI_COMMIT_TAG
-      changes: *example_presentation_changes
 
 # ==============================================================================
 # Test Stage: Base Image Smoke Test
@@ -295,7 +264,6 @@ test-base-image:
     - docker:dind
   needs:
     - job: build-base
-      optional: true
       artifacts: true
   before_script:
     - |
@@ -310,11 +278,8 @@ test-base-image:
     - echo "[OK] Base image smoke test passed"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: *image_changes
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: *image_changes
     - if: $CI_COMMIT_TAG
-      changes: *image_changes
 # ==============================================================================
 # Release Stage: Create GitLab Release
 # ==============================================================================
