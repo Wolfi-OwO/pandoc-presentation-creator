@@ -24,7 +24,7 @@ echo ""
 TITLE="My Presentation"
 AUTHOR="Author Name"
 FORMAT="beamer"
-IMAGE_TYPE="beamer"
+IMAGE_TYPE="beamer-full"
 OUTPUT_EXT="pdf"
 THEME="Madrid"
 
