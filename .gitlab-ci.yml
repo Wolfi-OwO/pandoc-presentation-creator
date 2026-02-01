@@ -44,10 +44,17 @@ workflow:
         docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
       else
         docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${IMAGE_TAG}" -o "${IMAGE_SUFFIX}.tar"
+        # Split tar into smaller chunks if ARTIFACT_SPLIT_TILES is set
+        if [ -n "$ARTIFACT_SPLIT_TILES" ] && [ "$ARTIFACT_SPLIT_TILES" -gt 1 ]; then
+          CHUNK_SIZE=$(($(stat -f%z "${IMAGE_SUFFIX}.tar" 2>/dev/null || stat -c%s "${IMAGE_SUFFIX}.tar") / ARTIFACT_SPLIT_TILES))
+          split -b "$CHUNK_SIZE" "${IMAGE_SUFFIX}.tar" "${IMAGE_SUFFIX}.tar.part."
+          rm "${IMAGE_SUFFIX}.tar"
+        fi
       fi
   artifacts:
     paths:
       - "*.tar"
+      - "*.tar.part.*"
     expire_in: 1 week
     when: on_success
   rules:
@@ -61,6 +68,7 @@ build-beamer:
   variables:
     IMAGE_SUFFIX: beamer-beamer
     DOCKERFILE: docker/Dockerfile.beamer
+    ARTIFACT_SPLIT_TILES: 4
 
 build-revealjs:
   <<: *docker-build
@@ -68,6 +76,7 @@ build-revealjs:
   variables:
     IMAGE_SUFFIX: beamer-revealjs
     DOCKERFILE: docker/Dockerfile.revealjs
+    ARTIFACT_SPLIT_TILES: 2
 
 build-base:
   <<: *docker-build
@@ -75,6 +84,7 @@ build-base:
   variables:
     IMAGE_SUFFIX: beamer-base
     DOCKERFILE: docker/Dockerfile.base
+    ARTIFACT_SPLIT_TILES: 1
 
 # ==============================================================================
 # Test Stage: Beamer Templates
@@ -99,6 +109,11 @@ test-beamer-templates:
       if [ -n "$CI_COMMIT_TAG" ]; then
         docker pull "$IMAGE_NAME:$IMAGE_TAG"
       else
+        # Reassemble tar chunks if they exist
+        if ls beamer-beamer.tar.part.* 1> /dev/null 2>&1; then
+          cat beamer-beamer.tar.part.* > beamer-beamer.tar
+          rm beamer-beamer.tar.part.*
+        fi
         docker load -i beamer-beamer.tar
       fi
     - mkdir -p test-output
@@ -148,6 +163,11 @@ test-build-helper:
       if [ -n "$CI_COMMIT_TAG" ]; then
         docker pull "$IMAGE_NAME:$IMAGE_TAG"
       else
+        # Reassemble tar chunks if they exist
+        if ls beamer-beamer.tar.part.* 1> /dev/null 2>&1; then
+          cat beamer-beamer.tar.part.* > beamer-beamer.tar
+          rm beamer-beamer.tar.part.*
+        fi
         docker load -i beamer-beamer.tar
       fi
     - mkdir -p test-output
@@ -193,6 +213,11 @@ test-revealjs-templates:
       if [ -n "$CI_COMMIT_TAG" ]; then
         docker pull "$IMAGE_NAME:$IMAGE_TAG"
       else
+        # Reassemble tar chunks if they exist
+        if ls beamer-revealjs.tar.part.* 1> /dev/null 2>&1; then
+          cat beamer-revealjs.tar.part.* > beamer-revealjs.tar
+          rm beamer-revealjs.tar.part.*
+        fi
         docker load -i beamer-revealjs.tar
       fi
     - mkdir -p test-output
@@ -236,6 +261,11 @@ test-base-image:
       if [ -n "$CI_COMMIT_TAG" ]; then
         docker pull "$IMAGE_NAME:$IMAGE_TAG"
       else
+        # Reassemble tar chunks if they exist
+        if ls beamer-base.tar.part.* 1> /dev/null 2>&1; then
+          cat beamer-base.tar.part.* > beamer-base.tar
+          rm beamer-base.tar.part.*
+        fi
         docker load -i beamer-base.tar
       fi
     - docker run --rm "$IMAGE_NAME:$IMAGE_TAG" pandoc --version
