@@ -30,21 +30,89 @@ build-beamer:
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
     - |
       docker build -f docker/Dockerfile.beamer \
-        -t "$CI_REGISTRY_IMAGE:beamer-latest" \
-        -t "$CI_REGISTRY_IMAGE:beamer-${CI_COMMIT_TAG}" \
+        -t "$IMAGE_NAME:latest" \
+        -t "$IMAGE_NAME:${CI_COMMIT_TAG}" \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
         --build-arg VCS_REF=$CI_COMMIT_TAG \
         .
-    - docker push "$CI_REGISTRY_IMAGE:beamer-latest"
-    - docker push "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
+    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${CI_COMMIT_TAG}" -o beamer-image.tar
+    - docker push "$IMAGE_NAME:latest"
+    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+  artifacts:
+    paths:
+      - beamer-image.tar
+    expire_in: 1 week
   rules:
     # Rebuild when image-affecting files change
     - if: $CI_COMMIT_TAG
       changes: *image_changes
 
     # Otherwise, don't run at all
+    - when: never
+
+# ==============================================================================
+# Build Stage: Reveal.js Image
+# ==============================================================================
+build-revealjs:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-revealjs"
+    - |
+      docker build -f docker/Dockerfile.revealjs \
+        -t "$IMAGE_NAME:latest" \
+        -t "$IMAGE_NAME:${CI_COMMIT_TAG}" \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_TAG \
+        .
+    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${CI_COMMIT_TAG}" -o revealjs-image.tar
+    - docker push "$IMAGE_NAME:latest"
+    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+  artifacts:
+    paths:
+      - revealjs-image.tar
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG
+      changes: *image_changes
+    - when: never
+
+# ==============================================================================
+# Build Stage: Base Image
+# ==============================================================================
+build-base:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
+    - |
+      docker build -f docker/Dockerfile.base \
+        -t "$IMAGE_NAME:latest" \
+        -t "$IMAGE_NAME:${CI_COMMIT_TAG}" \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_TAG \
+        .
+    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${CI_COMMIT_TAG}" -o base-image.tar
+    - docker push "$IMAGE_NAME:latest"
+    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+  artifacts:
+    paths:
+      - base-image.tar
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG
+      changes: *image_changes
     - when: never
 
 # ==============================================================================
@@ -58,22 +126,24 @@ test-beamer-templates:
   needs:
     - job: build-beamer
       optional: true
+      artifacts: true
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - mkdir -p test-output
-    - docker pull "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
+    - docker load -i beamer-image.tar
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
     # Test Minimalist.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG" \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Minimalist.md \
         -o /data/test-output/Minimalist-beamer.pdf
     # Test Project-Demo.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG" \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Project-Demo.md \
         -o /data/test-output/Project-Demo-beamer.pdf
@@ -99,15 +169,17 @@ test-build-helper:
   needs:
     - job: build-beamer
       optional: true
+      artifacts: true
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - mkdir -p test-output
-    - docker pull "$CI_REGISTRY_IMAGE:beamer-${CI_COMMIT_TAG:=latest}"
+    - docker load -i beamer-image.tar
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
         --entrypoint python3 \
-        "$CI_REGISTRY_IMAGE:beamer-${CI_COMMIT_TAG:=latest}" \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
         /opt/pandoc/scripts/build_beamer.py \
         --input /data/slides/Minimalist.md \
         --output /data/test-output/helper-test.pdf \
@@ -121,6 +193,63 @@ test-build-helper:
   rules:
     - if: $CI_COMMIT_TAG
       changes: *example_presentation_changes
+
+# ==============================================================================
+# Test Stage: Reveal.js Rendering
+# ==============================================================================
+test-revealjs-templates:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  needs:
+    - job: build-revealjs
+      optional: true
+      artifacts: true
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - mkdir -p test-output
+    - docker load -i revealjs-image.tar
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-revealjs"
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        --defaults /opt/pandoc/defaults/revealjs.yaml \
+        /data/slides/Minimalist.md \
+        -o /data/test-output/Minimalist-revealjs.html
+    - ls -lh test-output
+    - echo "[OK] Reveal.js templates rendered successfully"
+  artifacts:
+    paths:
+      - test-output/*.html
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG
+      changes: *example_presentation_changes
+
+# ==============================================================================
+# Test Stage: Base Image Smoke Test
+# ==============================================================================
+test-base-image:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  needs:
+    - job: build-base
+      optional: true
+      artifacts: true
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker load -i base-image.tar
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
+    - docker run --rm "$IMAGE_NAME:$CI_COMMIT_TAG" pandoc --version
+    - echo "[OK] Base image smoke test passed"
+  rules:
+    - if: $CI_COMMIT_TAG
+      changes: *image_changes
 # ==============================================================================
 # Release Stage: Create GitLab Release
 # ==============================================================================
@@ -130,9 +259,17 @@ create_release:
   needs:
     - job: build-beamer
       optional: true
+    - job: build-revealjs
+      optional: true
+    - job: build-base
+      optional: true
     - job: test-beamer-templates
       optional: true
     - job: test-build-helper
+      optional: true
+    - job: test-revealjs-templates
+      optional: true
+    - job: test-base-image
       optional: true
   script:
     - echo "Creating release for tag $CI_COMMIT_TAG"
@@ -143,14 +280,18 @@ create_release:
       ## Pandoc Presentation Creator - Release $CI_COMMIT_TAG
 
       ### Docker Images
-      - Beamer: `$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG`
-      - Beamer (latest): `$CI_REGISTRY_IMAGE:beamer-latest`
+      - Beamer: `$CI_REGISTRY_IMAGE/beamer-full:$CI_COMMIT_TAG`
+      - Beamer (latest): `$CI_REGISTRY_IMAGE/beamer-full:latest`
+      - Reveal.js: `$CI_REGISTRY_IMAGE/beamer-revealjs:$CI_COMMIT_TAG`
+      - Reveal.js (latest): `$CI_REGISTRY_IMAGE/beamer-revealjs:latest`
+      - Base: `$CI_REGISTRY_IMAGE/beamer-base:$CI_COMMIT_TAG`
+      - Base (latest): `$CI_REGISTRY_IMAGE/beamer-base:latest`
 
       ### Usage
       ```bash
-      docker pull $CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG
+      docker pull $CI_REGISTRY_IMAGE/beamer-full:$CI_COMMIT_TAG
       docker run --rm -v $(pwd):/data --user root \
-        $CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG \
+        $CI_REGISTRY_IMAGE/beamer-full:$CI_COMMIT_TAG \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/your-presentation.md \
         -o /data/output/presentation.pdf
@@ -160,8 +301,8 @@ create_release:
       See the attached PDF files generated during CI testing.
     assets:
       links:
-        - name: "Docker Image: beamer-$CI_COMMIT_TAG"
-          url: "https://$CI_REGISTRY_IMAGE:beamer-$CI_COMMIT_TAG"
+        - name: "Docker Image: beamer-full-$CI_COMMIT_TAG"
+          url: "https://$CI_REGISTRY_IMAGE/beamer-full:$CI_COMMIT_TAG"
           link_type: image
   rules:
     - if: $CI_COMMIT_TAG
