@@ -4,7 +4,7 @@ standalone: true
 slide-level: 2
 
 # Presentation Metadata
-title: "Angewandte Mathematik"
-subtitle: "Wahrscheinlichkeitsrechnung"
-author: "Lauchart Manuel, Palle Felix und Kofler Phillip"
+title: "Your Title"
+subtitle: "Your Subtitle"
+author: "Author<s>"
 date: \today
