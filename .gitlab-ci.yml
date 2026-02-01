@@ -9,6 +9,13 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_BUILDKIT: 1
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+    - when: never
+
 .image_changes: &image_changes
   - docker/**
   - core/**
@@ -28,30 +35,37 @@ build-beamer:
   services:
     - docker:dind
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-beamer"
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker build -f docker/Dockerfile.beamer \
         -t "$IMAGE_NAME:latest" \
-        -t "$IMAGE_NAME:${CI_COMMIT_TAG}" \
+        -t "$IMAGE_NAME:${IMAGE_TAG}" \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_TAG \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
         .
-    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${CI_COMMIT_TAG}" -o beamer-image.tar
-    - docker push "$IMAGE_NAME:latest"
-    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${IMAGE_TAG}" -o beamer-image.tar
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker push "$IMAGE_NAME:latest"
+        docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+      fi
   artifacts:
     paths:
       - beamer-image.tar
     expire_in: 1 week
   rules:
-    # Rebuild when image-affecting files change
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *image_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *image_changes
     - if: $CI_COMMIT_TAG
       changes: *image_changes
-
-    # Otherwise, don't run at all
-    - when: never
 
 # ==============================================================================
 # Build Stage: Reveal.js Image
@@ -62,27 +76,37 @@ build-revealjs:
   services:
     - docker:dind
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-revealjs"
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker build -f docker/Dockerfile.revealjs \
         -t "$IMAGE_NAME:latest" \
-        -t "$IMAGE_NAME:${CI_COMMIT_TAG}" \
+        -t "$IMAGE_NAME:${IMAGE_TAG}" \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_TAG \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
         .
-    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${CI_COMMIT_TAG}" -o revealjs-image.tar
-    - docker push "$IMAGE_NAME:latest"
-    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${IMAGE_TAG}" -o revealjs-image.tar
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker push "$IMAGE_NAME:latest"
+        docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+      fi
   artifacts:
     paths:
       - revealjs-image.tar
     expire_in: 1 week
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *image_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *image_changes
     - if: $CI_COMMIT_TAG
       changes: *image_changes
-    - when: never
 
 # ==============================================================================
 # Build Stage: Base Image
@@ -93,27 +117,37 @@ build-base:
   services:
     - docker:dind
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker build -f docker/Dockerfile.base \
         -t "$IMAGE_NAME:latest" \
-        -t "$IMAGE_NAME:${CI_COMMIT_TAG}" \
+        -t "$IMAGE_NAME:${IMAGE_TAG}" \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_TAG \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
         .
-    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${CI_COMMIT_TAG}" -o base-image.tar
-    - docker push "$IMAGE_NAME:latest"
-    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+    - docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${IMAGE_TAG}" -o base-image.tar
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker push "$IMAGE_NAME:latest"
+        docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+      fi
   artifacts:
     paths:
       - base-image.tar
     expire_in: 1 week
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *image_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *image_changes
     - if: $CI_COMMIT_TAG
       changes: *image_changes
-    - when: never
 
 # ==============================================================================
 # Test Stage: Template Rendering
@@ -128,22 +162,26 @@ test-beamer-templates:
       optional: true
       artifacts: true
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
     - mkdir -p test-output
     - docker load -i beamer-image.tar
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-beamer"
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     # Test Minimalist.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        "$IMAGE_NAME:$IMAGE_TAG" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Minimalist.md \
         -o /data/test-output/Minimalist-beamer.pdf
     # Test Project-Demo.md
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        "$IMAGE_NAME:$IMAGE_TAG" \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Project-Demo.md \
         -o /data/test-output/Project-Demo-beamer.pdf
@@ -154,9 +192,12 @@ test-beamer-templates:
       - test-output/*.pdf
     expire_in: 1 week
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *image_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *image_changes
     - if: $CI_COMMIT_TAG
       changes: *image_changes
-    - when: never
 
 # ==============================================================================
 # Test Stage: Python Build Helper
@@ -171,15 +212,19 @@ test-build-helper:
       optional: true
       artifacts: true
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
     - mkdir -p test-output
     - docker load -i beamer-image.tar
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-beamer"
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
         --entrypoint python3 \
-        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        "$IMAGE_NAME:$IMAGE_TAG" \
         /opt/pandoc/scripts/build_beamer.py \
         --input /data/slides/Minimalist.md \
         --output /data/test-output/helper-test.pdf \
@@ -191,6 +236,10 @@ test-build-helper:
       - test-output/helper-test.pdf
     expire_in: 1 week
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *example_presentation_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *example_presentation_changes
     - if: $CI_COMMIT_TAG
       changes: *example_presentation_changes
 
@@ -207,14 +256,18 @@ test-revealjs-templates:
       optional: true
       artifacts: true
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
     - mkdir -p test-output
     - docker load -i revealjs-image.tar
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-revealjs"
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        "$IMAGE_NAME:$IMAGE_TAG" \
         --defaults /opt/pandoc/defaults/revealjs.yaml \
         /data/slides/Minimalist.md \
         -o /data/test-output/Minimalist-revealjs.html
@@ -225,6 +278,10 @@ test-revealjs-templates:
       - test-output/*.html
     expire_in: 1 week
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *example_presentation_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *example_presentation_changes
     - if: $CI_COMMIT_TAG
       changes: *example_presentation_changes
 
@@ -241,13 +298,21 @@ test-base-image:
       optional: true
       artifacts: true
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      fi
   script:
     - docker load -i base-image.tar
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
-    - docker run --rm "$IMAGE_NAME:$CI_COMMIT_TAG" pandoc --version
+    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+    - docker run --rm "$IMAGE_NAME:$IMAGE_TAG" pandoc --version
     - echo "[OK] Base image smoke test passed"
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *image_changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: *image_changes
     - if: $CI_COMMIT_TAG
       changes: *image_changes
 # ==============================================================================
