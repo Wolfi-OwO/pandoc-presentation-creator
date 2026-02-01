@@ -14,7 +14,7 @@
 from: markdown
 
 # ------------------------------------------------------------------------------
-# Output-Konfiguration
+# Output Configuration
 # ------------------------------------------------------------------------------
 to: beamer
 standalone: true
@@ -25,8 +25,7 @@ highlight-style: tango
 output-file: /data/output/presentation_preamble.pdf
 
 # ------------------------------------------------------------------------------
-# Datenverzeichnis und Ressourcenpfade
-# ------------------------------------------------------------------------------
+# Data Directory and Resource Paths
 # ------------------------------------------------------------------------------
 data-dir: /opt/pandoc
 resource-path:

@@ -1,16 +1,16 @@
 # ==============================================================================
-# Dockerfile.revealjs - Reveal.js Präsentations-Image
+# Dockerfile.revealjs - Reveal.js Presentation Image
 # ==============================================================================
-# Dieses Image enthält Pandoc + Node.js + Reveal.js für interaktive
-# HTML-Präsentationen. Es ist optimiert für schnelle Web-Präsentationen.
+# This image contains Pandoc + Node.js + Reveal.js for interactive
+# HTML presentations. Optimized for fast web presentations with modern theme.
 #
 # Build:  docker build -f docker/Dockerfile.revealjs -t pandoc-revealjs:latest .
 # Usage:  docker run --rm -v $(pwd):/data pandoc-revealjs \
-#           -d defaults/revealjs.yaml slides.md -o slides.html
+#           --defaults /opt/pandoc/defaults/revealjs.yaml slides.md -o slides.html
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
 # Build Stage 1: Pandoc Binary
-# ------------------------------------------------------------------------------
+# ==============================================================================
 FROM alpine:3.19 AS pandoc-builder
 
 ARG PANDOC_VERSION=3.1.11
@@ -21,21 +21,21 @@ RUN apk add --no-cache wget ca-certificates \
     && mv "pandoc-${PANDOC_VERSION}/bin/pandoc" /usr/local/bin/ \
     && rm -rf "pandoc-${PANDOC_VERSION}" "pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
 
-# ------------------------------------------------------------------------------
-# Build Stage 2: Node.js dependencies (optional für reveal.js extensions)
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Build Stage 2: Node.js Dependencies (optional for Reveal.js extensions)
+# ==============================================================================
 FROM node:20-alpine AS node-builder
 
-# Arbeitsverzeichnis für Node packages
+# Working directory for Node packages
 WORKDIR /app
 
-# Nur minimal benötigte Node-Pakete (optional, für erweiterte Features)
-# Hier können Sie reveal.js plugins oder tools hinzufügen
+# Install minimal required Node packages (optional, for advanced features)
+# You can add Reveal.js plugins or tools here
 RUN npm install -g reveal-md@6.0.0 || true
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
 # Final Stage: Reveal.js Runtime Image
-# ------------------------------------------------------------------------------
+# ==============================================================================
 FROM alpine:3.19
 
 # Metadata
@@ -46,7 +46,7 @@ LABEL org.opencontainers.image.description="Pandoc with Reveal.js support for HT
 # Copy Pandoc from builder
 COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
 
-# Copy Node.js (nur Runtime, keine Build-Tools)
+# Copy Node.js (runtime only, no build tools)
 COPY --from=node-builder /usr/local/bin/node /usr/local/bin/node
 COPY --from=node-builder /usr/lib /usr/lib
 
@@ -102,41 +102,42 @@ RUN apk add --no-cache \
     build-base \
     openssl-dev
 
-# Erstelle non-root User
+# Create non-root user
 RUN addgroup -g 1000 pandoc && \
     adduser -D -u 1000 -G pandoc pandoc
 
-# Kopiere Projekt-Dateien (nur was für revealjs benötigt wird)
+# Copy project files (only what is needed for revealjs)
 COPY --chown=pandoc:pandoc core/defaults/revealjs.yaml /pandoc/defaults/revealjs.yaml
 COPY --chown=pandoc:pandoc core/metadata/ /pandoc/metadata/
 COPY --chown=pandoc:pandoc core/filters/ /pandoc/filters/
 COPY --chown=pandoc:pandoc core/includes/ /pandoc/includes/
 
-# Arbeitsverzeichnis
+# Working directory
 WORKDIR /data
 
-# Volume für Input/Output
+# Volume for input/output
 VOLUME ["/data"]
 
-# Wechsel zu non-root User
+# Switch to non-root user
 USER pandoc
 
-# Environment Variables
+# Environment variables
 ENV PANDOC_DATA_DIR=/pandoc
 
-# Entrypoint (Pandoc mit Zugriff auf /pandoc Verzeichnis)
+# Entrypoint (Pandoc with access to /pandoc directory)
 ENTRYPOINT ["pandoc"]
 
-# Default: Version anzeigen
+# Default: display version
 CMD ["--version"]
 
-# ------------------------------------------------------------------------------
-# Image Informationen
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Image Information
+# ==============================================================================
 # Size: varies with installed packages
 # Base: Alpine Linux + Node.js runtime
 # Pandoc Version: 3.1.11
 # Node Version: 20
+# Theme: Reveal.js Moon (modern, elegant)
 # Includes: defaults, metadata, filters, includes
 # User: non-root (pandoc:1000)
 # Working Directory: /data

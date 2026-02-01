@@ -1,47 +1,44 @@
 # ==============================================================================
-# Pandoc Defaults für Reveal.js Präsentationen
+# Pandoc Defaults for Reveal.js Presentations
 # ==============================================================================
-# Diese Datei definiert alle Standard-Einstellungen für Reveal.js-Präsentationen.
-# Sie kann mit: pandoc -d defaults/revealjs.yaml input.md -o output.html
-# aufgerufen werden.
+# This file defines all standard settings for Reveal.js presentations.
+# Usage: pandoc -d defaults/revealjs.yaml input.md -o output.html
 
-# ------------------------------------------------------------------------------
-# Output-Konfiguration
-# ------------------------------------------------------------------------------
+# Output Configuration
+# ==============================================================================
 to: revealjs
 output-file: output/presentation.html
 
-# Standalone-Dokument mit allen notwendigen Abhängigkeiten
+# Standalone document with all required dependencies
 standalone: true
 
-# ------------------------------------------------------------------------------
-# Reveal.js Spezifische Optionen
-# ------------------------------------------------------------------------------
+# Reveal.js Specific Options
+# ==============================================================================
 variables:
-  # Reveal.js Theme (black, white, league, beige, sky, night, serif, simple, solarized)
-  theme: black
+  # Reveal.js theme (black, white, league, beige, sky, night, serif, simple, solarized, moon)
+  theme: moon
 
   # Transitions (none, fade, slide, convex, concave, zoom)
   transition: slide
 
-  # Transition-Geschwindigkeit (default, fast, slow)
+  # Transition speed (default, fast, slow)
   transition-speed: default
 
-  # Hintergrund-Transition (none, fade, slide, convex, concave, zoom)
+  # Background transition (none, fade, slide, convex, concave, zoom)
   background-transition: fade
 
-  # Präsentations-Steuerung
+  # Presentation controls
   controls: true
   controlsTutorial: true
   controlsLayout: bottom-right
 
-  # Fortschritts-Anzeige
+  # Progress indicator
   progress: true
 
-  # Slide-Nummer anzeigen
+  # Display slide numbers
   slideNumber: true
 
-  # Hash-basierte URLs für Slides
+  # Hash-based URLs for slides
   hash: true
 
   # Navigation
@@ -52,29 +49,29 @@ variables:
   loop: false
   rtl: false
 
-  # Fragmente
+  # Fragments
   fragments: true
 
-  # Embed-Einstellungen
+  # Embed settings
   embedded: false
 
-  # Speaker Notes anzeigen
+  # Display speaker notes
   showNotes: false
 
-  # Auto-Slide (0 = deaktiviert)
+  # Auto-slide (0 = disabled)
   autoSlide: 0
 
-  # Mouse-Wheel Navigation
+  # Mouse-wheel navigation
   mouseWheel: false
 
-  # Präsentations-Größe
+  # Presentation size
   width: 1920
   height: 1080
   margin: 0.04
   minScale: 0.2
   maxScale: 2.0
 
-  # Code-Highlighting
+  # Code highlighting
   highlight-style: monokai
 
 # ------------------------------------------------------------------------------

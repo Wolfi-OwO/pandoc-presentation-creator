@@ -1,5 +1,8 @@
 # Pandoc Presentation Creator
 
+[![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
+[![latest-tag](https://img.shields.io/gitlab/v/tag/woofi4/public/pandoc-presentation-creator)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/tags)
+
 **Version:** 2.0
 **Status:** Production Ready
 **Maintainer:** Philip Kofler (<koflerphillip@outlook.com>)
@@ -8,7 +11,7 @@ A 100% containerized Pandoc-based presentation system for generating professiona
 
 ---
 
-## [>>] Quick Start
+## Quick Start
 
 ### 1. Build the Container Locally
 
@@ -50,7 +53,7 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ---
 
-## [DIR] Directory Structure
+## Directory Structure
 
 ```text
 .
@@ -71,14 +74,14 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ---
 
-## [*] Init Example Presentation
+## Example Initialization
 
 ```bash
 cd <your-directory>
-curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Inits the presentation in the current dir
+curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
 ```
 
-## [*] Key Features
+## Key Features
 
 ### 100% Containerization
 
@@ -98,16 +101,16 @@ curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/
 - Auto-generated documentation (HELP.pdf)
 - Reproducible builds with SHA tagging
 
-### UBC-Themed Beamer
+### Modern Beamer Presentation
 
-- Madrid theme with custom UBC color scheme
+- Metropolis theme with professional styling
 - Custom footer: Date | Author | Page x of y
-- Austrian date format support
+- International date format support
 - 16:9 aspect ratio
 
 ---
 
-## [DOC] Documentation
+## Documentation
 
 ### Comprehensive Help Guide
 
@@ -128,7 +131,7 @@ curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/
 
 ---
 
-## [CFG] Configuration
+## Configuration
 
 ### Default Settings
 
@@ -137,7 +140,7 @@ Edit `core/defaults/beamer.yaml` for global configuration:
 ```yaml
 slide-level: 1              # H1 = new slide
 section-titles: false       # Disable section separators
-theme: Madrid               # Beamer theme
+theme: metropolis           # Beamer theme
 aspectratio: 169            # 16:9 widescreen
 pdf-engine: xelatex         # LaTeX engine
 ```
@@ -167,7 +170,7 @@ docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
 
 ---
 
-## [CI] CI/CD Pipeline
+## CI/CD Pipeline
 
 GitLab CI automatically:
 
@@ -184,7 +187,7 @@ See [.gitlab-ci.yml](.gitlab-ci.yml) for details.
 
 ---
 
-## [ADV] Advanced Usage
+## Advanced Usage
 
 ### Python Build Helper
 

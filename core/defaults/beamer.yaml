@@ -11,7 +11,7 @@
 from: markdown
 
 # ------------------------------------------------------------------------------
-# Output-Konfiguration
+# Output Configuration
 # ------------------------------------------------------------------------------
 to: beamer
 standalone: true
@@ -21,7 +21,7 @@ slide-level: 1
 output-file: /data/output/presentation.pdf
 
 # ------------------------------------------------------------------------------
-# Datenverzeichnis und Ressourcenpfade
+# Data Directory and Resource Paths
 # ------------------------------------------------------------------------------
 data-dir: /opt/pandoc
 resource-path:
@@ -58,7 +58,7 @@ filters:
   - /opt/pandoc/filters/additional-metadata.lua
 
 # ------------------------------------------------------------------------------
-# Metadata-Dateien
+# Metadata Files
 # ------------------------------------------------------------------------------
 metadata-files:
   - /opt/pandoc/metadata/common.yaml
