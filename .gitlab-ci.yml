@@ -1,7 +1,7 @@
 stages:
+  - build-and-test
   - build
   - test
-  - docs
   - release
 
 variables:
@@ -17,285 +17,180 @@ workflow:
     - when: never
 
 # ==============================================================================
-# Build Stage: Container Images
+# For MR/Main: Build and Test Locally (No Artifacts, No Registry Push)
 # ==============================================================================
-.build-template: &docker-build
+build-and-test-beamer-local:
+  stage: build-and-test
   image: docker:latest
   services:
     - docker:dind
-  before_script:
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-      fi
   script:
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE/$IMAGE_SUFFIX"
-    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
-      docker build -f "$DOCKERFILE" \
-        -t "$IMAGE_NAME:latest" \
-        -t "$IMAGE_NAME:${IMAGE_TAG}" \
+      docker build -f docker/Dockerfile.beamer \
+        -t pandoc-beamer:test \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
         --build-arg VCS_REF=$CI_COMMIT_SHA \
         .
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker push "$IMAGE_NAME:latest"
-        docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
-      else
-        docker save "$IMAGE_NAME:latest" "$IMAGE_NAME:${IMAGE_TAG}" -o "${IMAGE_SUFFIX}.tar"
-        # Split tar into smaller chunks if ARTIFACT_SPLIT_TILES is set
-        if [ -n "$ARTIFACT_SPLIT_TILES" ] && [ "$ARTIFACT_SPLIT_TILES" -gt 1 ]; then
-          CHUNK_SIZE=$(($(stat -f%z "${IMAGE_SUFFIX}.tar" 2>/dev/null || stat -c%s "${IMAGE_SUFFIX}.tar") / ARTIFACT_SPLIT_TILES))
-          split -b "$CHUNK_SIZE" "${IMAGE_SUFFIX}.tar" "${IMAGE_SUFFIX}.tar.part."
-          rm "${IMAGE_SUFFIX}.tar"
-        fi
-      fi
-  artifacts:
-    paths:
-      - "*.tar"
-      - "*.tar.part.*"
-    expire_in: 1 week
-    when: on_success
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_TAG
-
-build-beamer:
-  <<: *docker-build
-  stage: build
-  variables:
-    IMAGE_SUFFIX: beamer-beamer
-    DOCKERFILE: docker/Dockerfile.beamer
-    ARTIFACT_SPLIT_TILES: 4
-
-build-revealjs:
-  <<: *docker-build
-  stage: build
-  variables:
-    IMAGE_SUFFIX: beamer-revealjs
-    DOCKERFILE: docker/Dockerfile.revealjs
-    ARTIFACT_SPLIT_TILES: 2
-
-build-base:
-  <<: *docker-build
-  stage: build
-  variables:
-    IMAGE_SUFFIX: beamer-base
-    DOCKERFILE: docker/Dockerfile.base
-    ARTIFACT_SPLIT_TILES: 1
-
-# ==============================================================================
-# Test Stage: Beamer Templates
-# ==============================================================================
-test-beamer-templates:
-  stage: test
-  image: docker:latest
-  services:
-    - docker:dind
-  needs:
-    - job: build-beamer
-      artifacts: true
-  before_script:
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-      fi
-  script:
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-beamer"
-    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker pull "$IMAGE_NAME:$IMAGE_TAG"
-      else
-        # Reassemble tar chunks if they exist
-        if ls beamer-beamer.tar.part.* 1> /dev/null 2>&1; then
-          cat beamer-beamer.tar.part.* > beamer-beamer.tar
-          rm beamer-beamer.tar.part.*
-        fi
-        docker load -i beamer-beamer.tar
-      fi
     - mkdir -p test-output
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$IMAGE_NAME:$IMAGE_TAG" \
+        pandoc-beamer:test \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Minimalist.md \
         -o /data/test-output/Minimalist-beamer.pdf
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$IMAGE_NAME:$IMAGE_TAG" \
+        pandoc-beamer:test \
         --defaults /opt/pandoc/defaults/beamer.yaml \
         /data/slides/Project-Demo.md \
         -o /data/test-output/Project-Demo-beamer.pdf
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        --entrypoint python3 \
+        pandoc-beamer:test \
+        /opt/pandoc/scripts/build_beamer.py \
+        --input /data/slides/Minimalist.md \
+        --output /data/test-output/helper-test.pdf \
+        --metadata footerbadge=CI-TEST
     - ls -lh test-output
-    - echo "[OK] All templates rendered successfully"
-  artifacts:
-    paths:
-      - test-output/*.pdf
-    expire_in: 1 week
+    - echo "[OK] Beamer build and tests passed"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_TAG
+
+build-and-test-base-local:
+  stage: build-and-test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - |
+      docker build -f docker/Dockerfile.base \
+        -t pandoc-base:test \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        .
+    - docker run --rm pandoc-base:test pandoc --version
+    - echo "[OK] Base image smoke test passed"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
 
 # ==============================================================================
-# Test Stage: Build Helper
+# For Tags: Build, Push to Registry, Test, Release
 # ==============================================================================
-test-build-helper:
+build-beamer:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-beamer"
+    - |
+      docker build -f docker/Dockerfile.beamer \
+        -t "$IMAGE_NAME:latest" \
+        -t "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        .
+    - docker push "$IMAGE_NAME:latest"
+    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build-base:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
+    - |
+      docker build -f docker/Dockerfile.base \
+        -t "$IMAGE_NAME:latest" \
+        -t "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        .
+    - docker push "$IMAGE_NAME:latest"
+    - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
+  rules:
+    - if: $CI_COMMIT_TAG
+
+test-beamer:
   stage: test
   image: docker:latest
   services:
     - docker:dind
   needs:
     - job: build-beamer
-      artifacts: true
   before_script:
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-      fi
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-beamer"
-    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker pull "$IMAGE_NAME:$IMAGE_TAG"
-      else
-        # Reassemble tar chunks if they exist
-        if ls beamer-beamer.tar.part.* 1> /dev/null 2>&1; then
-          cat beamer-beamer.tar.part.* > beamer-beamer.tar
-          rm beamer-beamer.tar.part.*
-        fi
-        docker load -i beamer-beamer.tar
-      fi
+    - docker pull "$IMAGE_NAME:$CI_COMMIT_TAG"
     - mkdir -p test-output
     - |
       docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        --defaults /opt/pandoc/defaults/beamer.yaml \
+        /data/slides/Minimalist.md \
+        -o /data/test-output/Minimalist-beamer.pdf
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
+        --defaults /opt/pandoc/defaults/beamer.yaml \
+        /data/slides/Project-Demo.md \
+        -o /data/test-output/Project-Demo-beamer.pdf
+    - |
+      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
         --entrypoint python3 \
-        "$IMAGE_NAME:$IMAGE_TAG" \
+        "$IMAGE_NAME:$CI_COMMIT_TAG" \
         /opt/pandoc/scripts/build_beamer.py \
         --input /data/slides/Minimalist.md \
         --output /data/test-output/helper-test.pdf \
         --metadata footerbadge=CI-TEST
-    - ls -lh test-output/helper-test.pdf
-    - echo "[OK] Build helper validated"
-  artifacts:
-    paths:
-      - test-output/helper-test.pdf
-    expire_in: 1 week
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_TAG
-
-# ==============================================================================
-# Test Stage: Reveal.js Templates
-# ==============================================================================
-test-revealjs-templates:
-  stage: test
-  image: docker:latest
-  services:
-    - docker:dind
-  needs:
-    - job: build-revealjs
-      artifacts: true
-  before_script:
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-      fi
-  script:
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-revealjs"
-    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker pull "$IMAGE_NAME:$IMAGE_TAG"
-      else
-        # Reassemble tar chunks if they exist
-        if ls beamer-revealjs.tar.part.* 1> /dev/null 2>&1; then
-          cat beamer-revealjs.tar.part.* > beamer-revealjs.tar
-          rm beamer-revealjs.tar.part.*
-        fi
-        docker load -i beamer-revealjs.tar
-      fi
-    - mkdir -p test-output
-    - |
-      docker run --rm -v "$CI_PROJECT_DIR":/data --user root \
-        "$IMAGE_NAME:$IMAGE_TAG" \
-        --defaults /opt/pandoc/defaults/revealjs.yaml \
-        /data/slides/Minimalist.md \
-        -o /data/test-output/Minimalist-revealjs.html
     - ls -lh test-output
-    - echo "[OK] Reveal.js templates rendered successfully"
+    - echo "[OK] All beamer tests passed"
   artifacts:
     paths:
-      - test-output/*.html
+      - test-output/*.pdf
     expire_in: 1 week
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_TAG
 
-# ==============================================================================
-# Test Stage: Base Image Smoke Test
-# ==============================================================================
-test-base-image:
+test-base:
   stage: test
   image: docker:latest
   services:
     - docker:dind
   needs:
     - job: build-base
-      artifacts: true
   before_script:
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-      fi
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
-    - IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
-    - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        docker pull "$IMAGE_NAME:$IMAGE_TAG"
-      else
-        # Reassemble tar chunks if they exist
-        if ls beamer-base.tar.part.* 1> /dev/null 2>&1; then
-          cat beamer-base.tar.part.* > beamer-base.tar
-          rm beamer-base.tar.part.*
-        fi
-        docker load -i beamer-base.tar
-      fi
-    - docker run --rm "$IMAGE_NAME:$IMAGE_TAG" pandoc --version
-    - echo "[OK] Base image smoke test passed"
+    - docker pull "$IMAGE_NAME:$CI_COMMIT_TAG"
+    - docker run --rm "$IMAGE_NAME:$CI_COMMIT_TAG" pandoc --version
+    - echo "[OK] Base image test passed"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_TAG
 
 # ==============================================================================
-# Release Stage: Create GitLab Release
+# Release Stage
 # ==============================================================================
 create_release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
     - job: build-beamer
-      optional: true
-    - job: build-revealjs
-      optional: true
     - job: build-base
-      optional: true
-    - job: test-beamer-templates
-      optional: true
-    - job: test-build-helper
-      optional: true
-    - job: test-revealjs-templates
-      optional: true
-    - job: test-base-image
-      optional: true
+    - job: test-beamer
+    - job: test-base
   script:
     - echo "Creating release for tag $CI_COMMIT_TAG"
   release:
@@ -307,8 +202,6 @@ create_release:
       ### Docker Images
       - Beamer: `$CI_REGISTRY_IMAGE/beamer-beamer:$CI_COMMIT_TAG`
       - Beamer (latest): `$CI_REGISTRY_IMAGE/beamer-beamer:latest`
-      - Reveal.js: `$CI_REGISTRY_IMAGE/beamer-revealjs:$CI_COMMIT_TAG`
-      - Reveal.js (latest): `$CI_REGISTRY_IMAGE/beamer-revealjs:latest`
       - Base: `$CI_REGISTRY_IMAGE/beamer-base:$CI_COMMIT_TAG`
       - Base (latest): `$CI_REGISTRY_IMAGE/beamer-base:latest`
 
@@ -323,7 +216,7 @@ create_release:
       ```
 
       ### Test Artifacts
-      See the attached PDF and HTML files generated during CI testing.
+      See the attached PDF files generated during CI testing.
     assets:
       links:
         - name: "Docker Image: beamer-beamer-$CI_COMMIT_TAG"
