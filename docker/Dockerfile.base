@@ -27,3 +27,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=pandoc-fetcher /usr/local/bin/pandoc /usr/local/bin/pandoc
 
 WORKDIR /data
+
+# ------------------------------------------------------------------------------
+# Image Informationen
+# ------------------------------------------------------------------------------
+# Size: varies with installed packages
+# Base: Debian Bookworm Slim
+# Pandoc Version: 3.1.11
+# Includes: core tools (python, git, make) + pandoc
+# Working Directory: /data

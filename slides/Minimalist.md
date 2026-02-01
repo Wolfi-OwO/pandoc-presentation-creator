@@ -8,6 +8,7 @@ Dies ist eine minimale Präsentation.
 
 - Punkt 1
 - Punkt 2
+  - Nested Punkt 1
 - Punkt 3
 
 # Dritte Folie

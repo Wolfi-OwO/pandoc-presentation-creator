@@ -1,10 +1,9 @@
 # ==============================================================================
-# Pandoc Defaults für Beamer Präsentationen
+# Pandoc Defaults for Beamer Presentations
 # ==============================================================================
-# Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen.
-# Sie ist für die Verwendung im Docker-Image optimiert und wird direkt eingebunden.
-# Sie kann mit: pandoc -d defaults/beamer.yaml input.md -o output.pdf
-# aufgerufen werden.
+# This file defines all standard settings for Beamer presentations.
+# It is optimized for use in the Docker image and is directly included.
+# Usage: pandoc -d defaults/beamer.yaml input.md -o output.pdf
 
 # ------------------------------------------------------------------------------
 # Input-Format
@@ -43,12 +42,12 @@ include-in-header:
 # Beamer Theme & Variables
 # ------------------------------------------------------------------------------
 variables:
-  theme: Madrid
+  theme: metropolis
   colortheme: default
-  fonttheme: default
+  fonttheme: metropolis
   classoption:
     - aspectratio=169
-  navigation: horizontal
+  navigation: empty
   section-titles: false
   highlight-style: tango
 

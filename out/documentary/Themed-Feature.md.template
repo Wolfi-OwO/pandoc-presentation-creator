@@ -1,7 +1,7 @@
 ---
 # Beamer Theme Settings
 theme: Singapore
-colortheme: seahorse
+colortheme: Singapore
 
 # Include custom footer template
 header-includes: |

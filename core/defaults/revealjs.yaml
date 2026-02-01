@@ -20,30 +20,30 @@ standalone: true
 variables:
   # Reveal.js Theme (black, white, league, beige, sky, night, serif, simple, solarized)
   theme: black
-  
+
   # Transitions (none, fade, slide, convex, concave, zoom)
   transition: slide
-  
+
   # Transition-Geschwindigkeit (default, fast, slow)
   transition-speed: default
-  
+
   # Hintergrund-Transition (none, fade, slide, convex, concave, zoom)
   background-transition: fade
-  
+
   # Präsentations-Steuerung
   controls: true
   controlsTutorial: true
   controlsLayout: bottom-right
-  
+
   # Fortschritts-Anzeige
   progress: true
-  
+
   # Slide-Nummer anzeigen
   slideNumber: true
-  
+
   # Hash-basierte URLs für Slides
   hash: true
-  
+
   # Navigation
   keyboard: true
   overview: true
@@ -51,29 +51,29 @@ variables:
   touch: true
   loop: false
   rtl: false
-  
+
   # Fragmente
   fragments: true
-  
+
   # Embed-Einstellungen
   embedded: false
-  
+
   # Speaker Notes anzeigen
   showNotes: false
-  
+
   # Auto-Slide (0 = deaktiviert)
   autoSlide: 0
-  
+
   # Mouse-Wheel Navigation
   mouseWheel: false
-  
+
   # Präsentations-Größe
   width: 1920
   height: 1080
   margin: 0.04
   minScale: 0.2
   maxScale: 2.0
-  
+
   # Code-Highlighting
   highlight-style: monokai
 

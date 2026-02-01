@@ -1,9 +1,9 @@
 # ==============================================================================
 # Dockerfile.beamer - Beamer/LaTeX PDF Presentation Image
 # ==============================================================================
-# This image contains Pandoc and a minimal LaTeX installation for generating
-# PDF presentations using the Beamer document class. Optimized for size while
-# ensuring stability.
+# This image contains Pandoc and a modern LaTeX installation for generating
+# PDF presentations using the Beamer document class with Metropolis theme.
+# Optimized with professional fonts and clean design.
 #
 # Build: docker build -f docker/Dockerfile.beamer -t pandoc-beamer:latest .
 # Usage: docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
@@ -36,18 +36,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Copy Pandoc from builder stage
 COPY --from=pandoc-fetcher /usr/local/bin/pandoc /usr/local/bin/pandoc
 
-# Install system dependencies first
+ARG INSTALL_DEV_TOOLS=false
+
+# Install system + LaTeX dependencies in a single layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
     curl \
     git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install LaTeX + Beamer dependencies with comprehensive packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
     # Core LaTeX packages
     texlive-latex-base \
     texlive-latex-recommended \
@@ -85,18 +82,12 @@ RUN apt-get update && \
     unzip \
     tar \
     gzip \
-    wget \
-    curl \
-    git \
     file \
     less \
     nano \
-    # Development tools (optional)
-    nodejs \
-    npm \
-    build-essential \
-    # Cleanup
-    && apt-get clean \
+    && if [ "$INSTALL_DEV_TOOLS" = "true" ]; then \
+      apt-get install -y --no-install-recommends nodejs npm build-essential; \
+    fi \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Verify LaTeX/Beamer installation and update font cache
@@ -104,13 +95,15 @@ RUN texhash && \
     fc-cache -fv && \
     echo "LaTeX installation verified"
 
-# Standard Beamer themes available: Madrid, Metropolis, Copenhagen, Berlin, etc.
+# Install additional beamer themes via tlmgr
+RUN tlmgr update --self --all && \
+    tlmgr install beamer beamerswitch metropolis inconsolata || true
 
-# Erstelle non-root User
+# Create non-root user
 RUN groupadd -g 1000 pandoc && \
     useradd -m -u 1000 -g pandoc pandoc
 
-# Kopiere Projekt-Dateien (nur was für beamer benötigt wird)
+# Copy project files (only what is needed for beamer)
 COPY --chown=pandoc:pandoc core/defaults/ /opt/pandoc/defaults/
 COPY --chown=pandoc:pandoc core/metadata/ /opt/pandoc/metadata/
 COPY --chown=pandoc:pandoc core/filters/ /opt/pandoc/filters/
@@ -119,13 +112,13 @@ COPY --chown=pandoc:pandoc core/templates/ /opt/pandoc/templates/
 COPY --chown=pandoc:pandoc core/assets/ /opt/pandoc/assets/
 COPY --chown=pandoc:pandoc scripts/build_beamer.py /opt/pandoc/scripts/build_beamer.py
 
-# Arbeitsverzeichnis
+# Working directory
 WORKDIR /data
 
-# Volume für Input/Output
+# Volume for input/output
 VOLUME ["/data"]
 
-# Wechsel zu non-root User
+# Switch to non-root user
 USER pandoc
 
 # Environment Variables
@@ -134,21 +127,22 @@ ENV PANDOC_DATA_DIR=/opt/pandoc
 # Entrypoint
 ENTRYPOINT ["pandoc"]
 
-# Default: Version anzeigen
+# Default: display version
 CMD ["--version"]
 
-# ------------------------------------------------------------------------------
-# Image Informationen
-# ------------------------------------------------------------------------------
-# Size: ~1.5 GB (minimal LaTeX setup)
+# ==============================================================================
+# Image Information
+# ==============================================================================
+# Size: varies with installed packages (TeX Live is large)
 # Base: Debian Bookworm Slim
 # Pandoc Version: 3.1.11
-# LaTeX: XeLaTeX + Beamer
-# Includes: Beamer defaults, filters, templates
+# LaTeX: XeLaTeX + LuaLaTeX + Beamer with Metropolis theme
+# Fonts: Metropolis default (sans-serif modern fonts)
+# Includes: defaults, filters, templates, includes, assets
 # User: non-root (pandoc:1000)
 # Working Directory: /data
-# Data Directory: /pandoc
+# Data Directory: /opt/pandoc
+# Dev Tools: optional via INSTALL_DEV_TOOLS=true
 #
-# Note: Wenn Sie eine noch kleinere Image-Größe benötigen,
-# können Sie auf tinytex umsteigen (~150 MB), aber mit
-# eingeschränkter Paket-Auswahl.
+# Note: If you want a smaller image, you can use TinyTeX (~150 MB),
+# but with limited package selection.

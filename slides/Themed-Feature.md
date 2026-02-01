@@ -1,7 +1,6 @@
 ---
 # Beamer Theme Settings
-theme: Singapore
-colortheme: seahorse
+theme: Antibes
 
 # Include custom footer template
 header-includes: |
@@ -67,12 +66,12 @@ Eine Einführung in:
 
 ```sql
 -- Schlecht: Full Table Scan
-SELECT * FROM employees 
+SELECT * FROM employees
 WHERE salary > 50000;
 
 -- Besser: Mit Index
 CREATE INDEX idx_salary ON employees(salary);
-SELECT employee_id, name FROM employees 
+SELECT employee_id, name FROM employees
 WHERE salary > 50000;
 ```
 

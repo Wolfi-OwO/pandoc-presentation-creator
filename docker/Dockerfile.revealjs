@@ -133,11 +133,11 @@ CMD ["--version"]
 # ------------------------------------------------------------------------------
 # Image Informationen
 # ------------------------------------------------------------------------------
-# Size: ~80 MB
-# Base: Alpine Linux + Node.js
+# Size: varies with installed packages
+# Base: Alpine Linux + Node.js runtime
 # Pandoc Version: 3.1.11
 # Node Version: 20
-# Includes: Reveal.js defaults, filters, assets
+# Includes: defaults, metadata, filters, includes
 # User: non-root (pandoc:1000)
 # Working Directory: /data
-# Data Directory: /pandoc (templates, filters, etc.)
+# Data Directory: /pandoc

@@ -1,10 +1,9 @@
 # ==============================================================================
-# Pandoc Defaults für Beamer mit UBC-Styled Preamble
+# Pandoc Defaults for Beamer with Custom Preamble
 # ==============================================================================
-# Diese Datei definiert alle Standard-Einstellungen für Beamer-Präsentationen
-# mit benutzerdefinierter Preamble.
-# Sie kann mit: pandoc -d defaults/beamer-preamble.yaml input.md -o output.pdf
-# aufgerufen werden.
+# This file defines all standard settings for Beamer presentations
+# with a custom preamble.
+# Usage: pandoc -d defaults/beamer-preamble.yaml input.md -o output.pdf
 #
 # NOTE: If you see a schema warning in VS Code, it is safe to ignore.
 # This file is a Pandoc defaults YAML, not an Ansible or Kubernetes config.
@@ -26,18 +25,31 @@ highlight-style: tango
 output-file: /data/output/presentation_preamble.pdf
 
 # ------------------------------------------------------------------------------
+# Datenverzeichnis und Ressourcenpfade
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+data-dir: /opt/pandoc
+resource-path:
+  - /opt/pandoc
+  - /opt/pandoc/includes
+  - /opt/pandoc/assets
+  - /opt/pandoc/metadata
+  - .
+# ------------------------------------------------------------------------------
 # Templates & Includes
 # ------------------------------------------------------------------------------
 template: templates/default_mod.latex
 include-in-header:
-  - templates/preamble.tex
+  - includes/beamer-preamble.tex
 
 # ------------------------------------------------------------------------------
 # Beamer Theme & Variables
 # ------------------------------------------------------------------------------
 variables:
+  theme: metropolis
+  colortheme: default
+  fonttheme: metropolis
+  navigation: empty
+  section-titles: true
   classoption:
     - aspectratio=169
-  theme: Singapore
-  navigation: horizontal
-  section-titles: true
