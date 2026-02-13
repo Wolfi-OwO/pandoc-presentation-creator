@@ -1,31 +1,16 @@
 Copyright (c) 2026 Phillip Kofler
-
 All rights reserved.
 
-This software (the “Software”), Pandoc Presentation Creator, is licensed, not sold.
+Pandoc Presentation Creator (“Software”) is licensed, not sold.
 
-Permission is hereby granted exclusively to Phillip Kofler (“Licensee”) to
-install and use the Software solely for the Licensee’s own personal or
-professional use.
+Permission is granted to any person to **use the Software** for personal or professional purposes.
 
-No other person or legal entity is granted any rights to use the Software.
+You may NOT, under any circumstances:
 
-The Licensee may not:
-- Copy, distribute, share, sell, sublicense, or transfer the Software
-- Allow any third party to access or use the Software
-- Reverse engineer, decompile, disassemble, or modify the Software
-- Use the Software on behalf of or for the benefit of any other person or entity
+- Copy, distribute, sublicense, sell, or transfer the Software  
+- Allow any third party to access or use the Software outside your own usage  
+- Reverse engineer, decompile, disassemble, or modify the Software  
 
-Any use of the Software by a person or entity other than the Licensee is
-strictly prohibited and constitutes copyright infringement.
+The Software may only be used; redistribution or sharing is strictly prohibited.
 
-This license is non-transferable and may be revoked immediately if the
-Licensee violates any of its terms.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
-
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
-LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE
-USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
