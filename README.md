@@ -145,47 +145,103 @@ pdf-engine: xelatex         # LaTeX engine
 
 ### Per-Presentation Metadata
 
-Add YAML front matter to your `.md` files:
+## Quick Start Guide
 
-```yaml
----
-title: "My Presentation"
-author: "Your Name"
-date: "11.01.2026"
----
-```
+### Build Your Presentation
 
-Or override at runtime:
+Run this command to build your slides:
 
 ```bash
-docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
-  --metadata title="Custom Title" \
-  --metadata author="Jane Doe" \
-  /data/slides/YourPresentation.md \
-  -o /data/output/CustomPresentation.pdf
+  --metadata-file=/data/config/config.yaml \
+  /data/slides/Example.md \
+  -o /data/output/presentation.pdf
 ```
 
----
+### Output
 
-## CI/CD Pipeline
+Your presentation will be generated as: `output/presentation.pdf`
 
-GitLab CI automatically:
+### Editing
 
-1. **Build Stage**: Builds Docker image and pushes to registry
-   - Tags: `beamer-latest`, `beamer-<commit-sha>`
+1. **Edit content**: Modify `slides/Example.md` with your content
+2. **Change settings**: Update `config/config.yaml` (theme, metadata, etc.)
+3. **Rebuild**: Run the docker command above
 
-2. **Test Stage**: Renders all test presentations
-   - Tests Example.md and Minimalist.md
-   - Validates Python build helper
+### Available Docker Images
 
-3. **Docs Stage**: Auto-generates HELP.pdf
-
-See [.gitlab-ci.yml](.gitlab-ci.yml) for details.
-
----
+- `pandoc-beamer:latest` - For PDF (Beamer) output
+- `pandoc-revealjs:latest` - For HTML (Reveal.js) output
 
 ## Advanced Usage
+
+### Custom Output Name
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \
+  /data/slides/Example.md \
+  -o /data/output/my-presentation.pdf
+```
+
+### Multiple Input Files
+
+#### Adding them separately
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata-file=/data/config/config.yaml \
+  --metadata-file=/data/config/config_2.yaml \
+  /data/slides/intro.md /data/slides/main.md /data/slides/conclusion.md \
+  -o /data/output/full-presentation.pdf
+```
+
+#### Using a wildcard
+
+##### Linux
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  $(find slides -name '*.md' -print | sed 's|^|/data/|') \
+    --defaults /opt/pandoc/defaults/beamer.yaml \
+    --metadata-file=/data/config/config.yaml \
+    -o /data/output/presentation.pdf
+```
+
+##### Windows
+
+```powershell
+docker run --rm `
+  -v "${PWD}:/data" `
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest `
+  $(Get-ChildItem slides -Filter *.md -Recurse | ForEach-Object { "/data/" + $_.FullName.Substring($PWD.Path.Length + 1).Replace('\','/') }) `
+  --defaults /opt/pandoc/defaults/beamer.yaml `
+  --metadata-file=/data/config/config.yaml `
+  -o /data/output/presentation.pdf
+```
+
+### Override Metadata
+
+```bash
+docker run --rm \
+  -v $(pwd):/data \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  --defaults /opt/pandoc/defaults/beamer.yaml \
+  --metadata title="My Custom Title" \
+  /data/slides/Example.md \
+  -o /data/output/presentation.pdf
+```
 
 ### Python Build Helper
 
