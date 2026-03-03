@@ -1,7 +1,7 @@
 # Pandoc Presentation Creator
 
 [![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
-[![latest-tag](https://img.shields.io/gitlab/v/tag/woofi4/public/pandoc-presentation-creator)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/tags)
+[![latest-release](https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/badges/release.svg)](https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/releases/permalink/latest)
 
 **Maintainer:** Phillip Kofler (<koflerphillip@outlook.com>)
 
