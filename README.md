@@ -345,7 +345,7 @@ See [info/help.md](info/help.md) for comprehensive troubleshooting guide.
 
 ## [LIC] License
 
-See LICENSE file for details.
+This project is licensed under the MIT License. See LICENSE for details.
 
 ---
 
