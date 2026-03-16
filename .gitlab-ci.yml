@@ -113,6 +113,10 @@ build_docker:
         IMAGE_VERSION="${CI_COMMIT_TAG#v}"
       fi
 
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        apk add --no-cache curl tar
+      fi
+
       docker build \
         --build-arg VERSION="$IMAGE_VERSION" \
         --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
@@ -146,7 +150,7 @@ build_docker:
       fi
 
   after_script:
-    - docker logout "$CI_REGISTRY" || true
+    - command -v docker >/dev/null 2>&1 && docker logout "$CI_REGISTRY" || true
 
 # --------------------
 # Container Scanning (Trivy)
@@ -170,6 +174,10 @@ container_scan:
   script:
     - |
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        apk add --no-cache curl tar
+      fi
 
       if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
         : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
@@ -216,7 +224,7 @@ container_scan:
       rm -f pandoc-image.tar
 
   after_script:
-    - docker logout "$CI_REGISTRY" || true
+    - command -v docker >/dev/null 2>&1 && docker logout "$CI_REGISTRY" || true
 
   cache:
     paths:
@@ -245,6 +253,10 @@ test_docker:
   script:
     - |
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        apk add --no-cache curl tar
+      fi
 
       if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
         : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
@@ -305,6 +317,10 @@ push_to_registry:
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
 
       if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        apk add --no-cache curl tar
+      fi
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
         : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
@@ -360,9 +376,6 @@ cleanup_external_cache:
       "$AZCOPY_BIN" remove \
         "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
         || true
-  after_script:
-    - docker logout "$CI_REGISTRY" || true
-
 # --------------------
 # Release
 # --------------------
