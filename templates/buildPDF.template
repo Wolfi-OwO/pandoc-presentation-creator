@@ -1,6 +1,55 @@
 #!/bin/sh
 set -e
 
+USE_COLOR=true
+if [ -n "${NO_COLOR:-}" ]; then
+    USE_COLOR=false
+fi
+
+if [ "${USE_COLOR}" = "true" ]; then
+    C_RESET="$(printf '\033[0m')"
+    C_BOLD="$(printf '\033[1m')"
+    C_BLUE="$(printf '\033[34m')"
+    C_GREEN="$(printf '\033[32m')"
+    C_YELLOW="$(printf '\033[33m')"
+    C_RED="$(printf '\033[31m')"
+    C_GRAY="$(printf '\033[90m')"
+else
+    C_RESET=''
+    C_BOLD=''
+    C_BLUE=''
+    C_GREEN=''
+    C_YELLOW=''
+    C_RED=''
+    C_GRAY=''
+fi
+
+print_line() {
+    printf "%s\n" "${C_GRAY}------------------------------------------------------------${C_RESET}"
+}
+
+print_title() {
+    print_line
+    printf "%s%s%s\n" "${C_BOLD}${C_BLUE}" "$1" "${C_RESET}"
+    print_line
+}
+
+print_info() {
+    printf "%s%s%s %s\n" "${C_BLUE}" "[INFO]" "${C_RESET}" "$1"
+}
+
+print_warn() {
+    printf "%s%s%s %s\n" "${C_YELLOW}" "[WARN]" "${C_RESET}" "$1"
+}
+
+print_error() {
+    printf "%s%s%s %s\n" "${C_RED}" "[ERROR]" "${C_RESET}" "$1"
+}
+
+print_success() {
+    printf "%s%s%s %s\n" "${C_GREEN}" "[OK]" "${C_RESET}" "$1"
+}
+
 INPUT_FILE="${INPUT_FILE:-/data/slides/Minimalist.md}"
 OUTPUT_FILE="${OUTPUT_FILE:-/data/output/presentation.pdf}"
 METADATA_FILE="${METADATA_FILE:-/data/config/config.yaml}"
@@ -9,7 +58,7 @@ METADATA_OVERRIDES="${METADATA_OVERRIDES:-}"
 PDF_ENGINE="${PDF_ENGINE:-}"
 
 if [ ! -f "${INPUT_FILE}" ]; then
-    echo "ERROR: Input markdown file not found: ${INPUT_FILE}"
+    print_error "Input markdown file not found: ${INPUT_FILE}"
     exit 1
 fi
 
@@ -19,10 +68,16 @@ CMD="python3 /opt/pandoc/scripts/build_beamer.py --input ${INPUT_FILE} --output 
 
 if [ -f "${METADATA_FILE}" ]; then
     CMD="${CMD} --defaults ${METADATA_FILE}"
+else
+    print_warn "Defaults file not found, skipping: ${METADATA_FILE}"
 fi
 
-if [ -n "${DEFAULTS_FILE}" ] && [ -f "${DEFAULTS_FILE}" ]; then
-    CMD="${CMD} --defaults ${DEFAULTS_FILE}"
+if [ -n "${DEFAULTS_FILE}" ]; then
+    if [ -f "${DEFAULTS_FILE}" ]; then
+        CMD="${CMD} --defaults ${DEFAULTS_FILE}"
+    else
+        print_warn "Custom defaults file not found, skipping: ${DEFAULTS_FILE}"
+    fi
 fi
 
 if [ -n "${METADATA_OVERRIDES}" ]; then
@@ -36,12 +91,17 @@ if [ -n "${PDF_ENGINE}" ]; then
     CMD="${CMD} --pdf-engine ${PDF_ENGINE}"
 fi
 
-echo "=== Starting Beamer build ==="
-echo "Input: ${INPUT_FILE}"
-echo "Output: ${OUTPUT_FILE}"
+print_title "Starting Beamer Build"
+print_info "Input:  ${INPUT_FILE}"
+print_info "Output: ${OUTPUT_FILE}"
+printf "%s%s%s\n" "${C_GRAY}" "Command: ${CMD}" "${C_RESET}"
 
 # shellcheck disable=SC2086
-sh -c "${CMD}"
-
-echo "=== Build complete ==="
-echo "PDF created at: ${OUTPUT_FILE}"
+if sh -c "${CMD}"; then
+    print_title "Build Complete"
+    print_success "PDF created at: ${OUTPUT_FILE}"
+else
+    print_title "Build Failed"
+    print_error "Command failed while generating PDF"
+    exit 1
+fi
