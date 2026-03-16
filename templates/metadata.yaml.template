@@ -6,7 +6,7 @@ subtitle: "Presentation Subtitle"
 author: "AUTHOR_PLACEHOLDER"
 date: "DATE_PLACEHOLDER"
 institute: "My Organization"
-lang: en-US
+lang: en
 
 # ------------------------------------------------------------------------------
 # Beamer Short Variants (Navigation/Footer)

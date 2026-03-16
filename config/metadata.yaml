@@ -6,7 +6,7 @@ subtitle: "Your Subtitle"
 author: "Author<s>"
 date: \today
 institute: "Your Organization"
-lang: en-US
+lang: en
 
 # ------------------------------------------------------------------------------
 # Beamer Short Variants (Header/Footer/Navigation)
