@@ -2,6 +2,31 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Build Presentation PDF",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/data",
+        "--entrypoint=/bin/sh",
+        "pandoc-beamer:local",
+        "-c",
+        "/data/buildPDF"
+      ],
+      "dependsOn": ["Build Beamer Docker Image"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
       "label": "Build Beamer Docker Image",
       "type": "shell",
       "command": "docker",
@@ -15,7 +40,7 @@
       ],
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       },
       "problemMatcher": [],
       "presentation": {
@@ -32,14 +57,14 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/data",
-        "--user",
-        "root",
+        "--entrypoint=/bin/sh",
+        "-e",
+        "INPUT_FILE=/data/slides/Minimalist.md",
+        "-e",
+        "OUTPUT_FILE=/data/output/presentation.pdf",
         "pandoc-beamer:local",
-        "--defaults",
-        "/opt/pandoc/defaults/beamer.yaml",
-        "/data/slides/Minimalist.md",
-        "-o",
-        "/data/output/presentation.pdf"
+        "-c",
+        "/data/buildPDF"
       ],
       "dependsOn": ["Build Beamer Docker Image"],
       "problemMatcher": [],
@@ -58,8 +83,21 @@
     {
       "label": "Run Local Tests",
       "type": "shell",
-      "command": "bash",
-      "args": ["-c", "mkdir -p output && docker run --rm -v $(pwd):/data --user root pandoc-beamer:local --defaults /opt/pandoc/defaults/beamer.yaml /data/slides/Minimalist.md -o /data/output/test-presentation.pdf && echo 'PDF generated successfully'"],
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/data",
+        "--entrypoint=/bin/sh",
+        "-e",
+        "INPUT_FILE=/data/slides/Minimalist.md",
+        "-e",
+        "OUTPUT_FILE=/data/output/test-presentation.pdf",
+        "pandoc-beamer:local",
+        "-c",
+        "/data/buildPDF && echo 'PDF generated successfully'"
+      ],
       "dependsOn": ["Build Beamer Docker Image"],
       "problemMatcher": []
     }

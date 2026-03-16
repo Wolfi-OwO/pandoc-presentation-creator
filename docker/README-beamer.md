@@ -1,78 +1,68 @@
 # Pandoc Beamer Image
 
-Docker Image mit Pandoc + minimal LaTeX für professionelle PDF-Präsentationen.
+Docker image with Pandoc + LaTeX for professional Beamer PDF presentations.
 
-## Verwendungszweck
+## Use Cases
 
-- Akademische Präsentationen
-- PDF-Slides mit Beamer
-- LaTeX-basierte Typografie
-- Wissenschaftliche Vorträge
+- Academic presentations
+- Beamer-based PDF slides
+- LaTeX typography workflow
+- Reproducible container builds
 
 ## Image Details
 
 - **Base**: Debian Bookworm Slim
 - **Pandoc**: v3.1.11
 - **LaTeX**: Minimal TeXLive + Beamer
-- **Size**: ~250 MB
+- **Size**: depends on TeX packages
 - **Platforms**: linux/amd64
 - **User**: non-root (pandoc:1000)
-- **Includes**: Templates, Filters, LaTeX-Pakete
+- **Includes**: defaults, templates, filters, includes, metadata
 
-## Schnellstart
+## Quick Start
 
 ```bash
-# Standard Beamer-Präsentation
-docker run --rm -v $(pwd):/data \
-  yourusername/pandoc-presentation-beamer:latest \
-  -d /pandoc/defaults/beamer.yaml \
-  slides.md -o presentation.pdf
+# Build local image
+docker build -f docker/Dockerfile.beamer -t pandoc-beamer:local .
 
-# Mit XeLaTeX
-docker run --rm -v $(pwd):/data \
-  yourusername/pandoc-presentation-beamer:latest \
-  slides.md \
-  --to beamer \
-  --pdf-engine=xelatex \
-  -V theme=metropolis \
-  -o presentation.pdf
+# Run build helper mounted from project root
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 
-# Mit UBC-Preamble (Farbschema + Footer)
-docker run --rm -v $(pwd):/data \
-  yourusername/pandoc-presentation-beamer:latest \
-  --defaults /data/core/defaults/beamer-preamble.yaml \
-  /data/slides/Example.md \
-  -o /data/output/presentation_preamble.pdf
-
-# Shortcut-Skript (nutzt registries Image)
-./scripts/build-docker-preamble.sh slides/Example.md
+# Override input/output
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
 
 ## Features
 
-- [OK] Vorinstallierte Beamer defaults
-- [OK] Minimal LaTeX Setup (optimierte Größe)
-- [OK] XeLaTeX + PDFLaTeX Support
-- [OK] Beamer Themes & Color Themes
-- [OK] LaTeX-Pakete-Integration
-- [OK] Mathematische Formeln
-- [OK] TikZ-Grafiken
+- [OK] Preinstalled Beamer defaults
+- [OK] XeLaTeX + LuaLaTeX support
+- [OK] Beamer theme support
+- [OK] Filter and template integration
+- [OK] Math and graphics packages
 
-## Dokumentation
+## Documentation
 
-Vollständige Dokumentation: [GitLab Repository](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+Full documentation: <https://gitlab.com/woofi4/public/pandoc-presentation-creator>
 
 ## Tags
 
-- `latest` - Neueste Version
-- `vX.Y.Z` - Spezifische Versionen
-- `beamer` - Format-Tag
+- `latest` - latest published version
+- `vX.Y.Z` - specific versions
 
 ## Related Images
 
-- [pandoc-presentation-base](https://hub.docker.com/r/yourusername/pandoc-presentation-base) - Basis-Image
-- [pandoc-presentation-revealjs](https://hub.docker.com/r/yourusername/pandoc-presentation-revealjs) - HTML-Präsentationen
+- `pandoc-base:test` / base image workflow
 
-## [!] Hinweis
+## Note
 
-Dieses Image ist größer (~250 MB) aufgrund der LaTeX-Dependencies. Für minimale Image-Größe verwenden Sie base oder revealjs Images.
+This image is larger than the base image because LaTeX dependencies are included.

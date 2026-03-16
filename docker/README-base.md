@@ -1,35 +1,37 @@
 # Pandoc Base Image
 
-Minimales Alpine-basiertes Docker Image mit Pandoc für Dokument-Konvertierungen.
+Minimal base image with Pandoc for document conversion and as parent image.
 
-## Verwendungszweck
+## Use Cases
 
-- Einfache Markdown-Konvertierungen
-- Basis für andere Pandoc-Images
-- Minimale Image-Größe (~40 MB)
+- Markdown conversion
+- Base for other Pandoc images
+- Lean runtime for non-LaTeX workflows
 
 ## Image Details
 
-- **Base**: Alpine Linux 3.19
+- **Base**: Debian Bookworm Slim
 - **Pandoc**: v3.1.11
-- **Size**: ~40 MB
-- **Platforms**: linux/amd64, linux/arm64
-- **User**: non-root (pandoc:1000)
+- **Size**: varies with package updates
+- **Platforms**: linux/amd64
 
-## Schnellstart
+## Quick Start
 
 ```bash
-# Version anzeigen
-docker run --rm yourusername/pandoc-presentation-base:latest --version
+# Build base image
+docker build -f docker/Dockerfile.base -t pandoc-base:test .
 
-# Markdown zu HTML
+# Show pandoc version
+docker run --rm pandoc-base:test pandoc --version
+
+# Markdown to HTML
 docker run --rm -v $(pwd):/data \
-  yourusername/pandoc-presentation-base:latest \
+  pandoc-base:test \
   input.md -o output.html
 
-# Mit erweiterten Optionen
+# With additional options
 docker run --rm -v $(pwd):/data \
-  yourusername/pandoc-presentation-base:latest \
+  pandoc-base:test \
   --from markdown \
   --to html5 \
   --standalone \
@@ -39,15 +41,14 @@ docker run --rm -v $(pwd):/data \
 
 ## Dokumentation
 
-Vollständige Dokumentation: [GitLab Repository](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+Full documentation: <https://gitlab.com/woofi4/public/pandoc-presentation-creator>
 
 ## Tags
 
-- `latest` - Neueste Version
-- `vX.Y.Z` - Spezifische Versionen
-- `base` - Format-Tag
+- `latest` - latest published version
+- `vX.Y.Z` - specific versions
+- `base` - base flavor tag
 
 ## Related Images
 
-- [pandoc-presentation-revealjs](https://hub.docker.com/r/yourusername/pandoc-presentation-revealjs) - HTML-Präsentationen
-- [pandoc-presentation-beamer](https://hub.docker.com/r/yourusername/pandoc-presentation-beamer) - PDF-Präsentationen
+- Beamer image: `docker/Dockerfile.beamer`

@@ -20,8 +20,10 @@ RUN apk add --no-cache wget && \
 FROM debian:bookworm-slim
 
 # Build arguments for metadata
+ARG VERSION=unknown
 ARG BUILD_DATE
 ARG VCS_REF
+ARG VCS_URL
 ARG PANDOC_VERSION=3.1.11
 
 LABEL maintainer="koflerphillip@outlook.com"
@@ -29,7 +31,9 @@ LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-p
 LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${VCS_REF}"
-LABEL org.opencontainers.image.version="${PANDOC_VERSION}"
+LABEL org.opencontainers.image.url="${VCS_URL}"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.pandoc.version="${PANDOC_VERSION}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 

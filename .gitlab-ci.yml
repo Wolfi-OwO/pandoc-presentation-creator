@@ -25,11 +25,14 @@ build-and-test-beamer-local:
   services:
     - docker:dind
   script:
+    - IMAGE_VERSION="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker build -f docker/Dockerfile.beamer \
         -t pandoc-beamer:test \
-        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        --build-arg VERSION="$IMAGE_VERSION" \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --build-arg VCS_REF="$CI_COMMIT_SHA" \
+        --build-arg VCS_URL="$CI_PROJECT_URL" \
         .
     - mkdir -p test-output
     - |
@@ -70,11 +73,14 @@ build-and-test-base-local:
   services:
     - docker:dind
   script:
+    - IMAGE_VERSION="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - |
       docker build -f docker/Dockerfile.base \
         -t pandoc-base:test \
-        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        --build-arg VERSION="$IMAGE_VERSION" \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --build-arg VCS_REF="$CI_COMMIT_SHA" \
+        --build-arg VCS_URL="$CI_PROJECT_URL" \
         .
     - docker run --rm pandoc-base:test pandoc --version
     - echo "[OK] Base image smoke test passed"
@@ -94,12 +100,15 @@ build-beamer:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-full"
+    - IMAGE_VERSION="$CI_COMMIT_TAG"
     - |
       docker build -f docker/Dockerfile.beamer \
         -t "$IMAGE_NAME:latest" \
         -t "$IMAGE_NAME:$CI_COMMIT_TAG" \
-        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        --build-arg VERSION="$IMAGE_VERSION" \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --build-arg VCS_REF="$CI_COMMIT_SHA" \
+        --build-arg VCS_URL="$CI_PROJECT_URL" \
         .
     - docker push "$IMAGE_NAME:latest"
     - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
@@ -115,12 +124,15 @@ build-base:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE/beamer-base"
+    - IMAGE_VERSION="$CI_COMMIT_TAG"
     - |
       docker build -f docker/Dockerfile.base \
         -t "$IMAGE_NAME:latest" \
         -t "$IMAGE_NAME:$CI_COMMIT_TAG" \
-        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        --build-arg VERSION="$IMAGE_VERSION" \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --build-arg VCS_REF="$CI_COMMIT_SHA" \
+        --build-arg VCS_URL="$CI_PROJECT_URL" \
         .
     - docker push "$IMAGE_NAME:latest"
     - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"

@@ -13,6 +13,20 @@ RUN apk add --no-cache wget && \
 # Stage 2: Base Runtime
 FROM debian:bookworm-slim
 
+ARG VERSION=unknown
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VCS_URL
+ARG PANDOC_VERSION=3.1.11
+
+LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.description="Pandoc base image"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.revision="${VCS_REF}"
+LABEL org.opencontainers.image.url="${VCS_URL}"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.pandoc.version="${PANDOC_VERSION}"
+
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \

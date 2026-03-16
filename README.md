@@ -11,41 +11,64 @@ A 100% containerized Pandoc-based presentation system for generating professiona
 
 ## Quick Start
 
-### 1. Build the Container Locally
+### 1. Initialize a Project (Recommended)
+
+```bash
+bash init.sh
+```
+
+The initializer asks simple questions (title, author, slide filename, output filename) and creates:
+
+- `config/config.yaml`
+- `slides/Example.md` (or your chosen slide filename)
+- `buildPDF`
+- `HELP.md`
+
+### 2. Build a Presentation
+
+```bash
+# Pull registry image (or let init.sh pin a specific version)
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+
+# Render PDF via /data/buildPDF (documentation-creator style)
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+### 3. Optional: Build Local Dev Image
 
 ```bash
 docker build -f docker/Dockerfile.beamer -t pandoc-beamer:local .
 ```
 
-### 2. Pull from GitLab Registry (Alternative)
+### 4. Common Script Flags
 
 ```bash
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest
+# Set custom input/output via environment variables
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+
+# Merge an additional defaults file and metadata overrides
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  -e DEFAULTS_FILE=/data/config/custom.yaml \
+  -e METADATA_OVERRIDES="footerbadge=CONFIDENTIAL" \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
 ```
 
-### 3. Render a Presentation
-
-```bash
-# Using local image
-docker run --rm \
-  -v $(pwd):/data \
-  --user root \
-  pandoc-beamer:local \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  /data/slides/Minimalist.md \
-  -o /data/output/presentation.pdf
-
-# Or using registry image
-docker run --rm \
-  -v $(pwd):/data \
-  --user root \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  /data/slides/Minimalist.md \
-  -o /data/output/presentation.pdf
-```
-
-### 4. VS Code Integration
+### 5. VS Code Integration
 
 Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
@@ -78,6 +101,9 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 cd <your-directory>
 curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
 ```
+
+The generated `buildPDF` script is the main build entrypoint and is designed to be called from inside the container with `-c "/data/buildPDF"`.
+During initialization, `init.sh` resolves the current image version label and stamps that exact image tag into generated `HELP.md` commands.
 
 ## Key Features
 
@@ -116,7 +142,7 @@ curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/
 - **PDF:** Generate with:
 
   ```bash
-  docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
+  docker run --rm -v $(pwd):/data --user root registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
     /data/info/help.md -o /data/HELP.pdf \
     --from markdown --to pdf --pdf-engine xelatex -V geometry:margin=2cm --toc
   ```
@@ -126,6 +152,7 @@ curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/
 - **[info/filesystem-consolidation.md](info/filesystem-consolidation.md)**: Consolidation plan and verification steps
 - **[info/REFACTOR-SUMMARY.md](info/REFACTOR-SUMMARY.md)**: Architectural refactoring summary
 - **[docker/README-beamer.md](docker/README-beamer.md)**: Docker-specific documentation
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution workflow and standards
 
 ---
 
@@ -153,12 +180,12 @@ Run this command to build your slides:
 
 ```bash
 docker run --rm \
-  -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  --metadata-file=/data/config/config.yaml \
-  /data/slides/Example.md \
-  -o /data/output/presentation.pdf
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
 
 ### Output
@@ -182,12 +209,12 @@ Your presentation will be generated as: `output/presentation.pdf`
 
 ```bash
 docker run --rm \
-  -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  --metadata-file=/data/config/config.yaml \
-  /data/slides/Example.md \
-  -o /data/output/my-presentation.pdf
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/my-presentation.pdf \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
 
 ### Multiple Input Files
@@ -196,14 +223,16 @@ docker run --rm \
 
 ```bash
 docker run --rm \
-  -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  --metadata-file=/data/config/config.yaml \
-  --metadata-file=/data/config/config_2.yaml \
-  /data/slides/intro.md /data/slides/main.md /data/slides/conclusion.md \
-  -o /data/output/full-presentation.pdf
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/intro.md \
+  -e OUTPUT_FILE=/data/output/full-presentation.pdf \
+  -e DEFAULTS_FILE=/data/config/config_2.yaml \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
+
+Note: `buildPDF` supports one markdown input file per invocation. To merge multiple files, concatenate them first or run pandoc directly.
 
 #### Using a wildcard
 
@@ -212,11 +241,9 @@ docker run --rm \
 ```bash
 docker run --rm \
   -v "$(pwd):/data" \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
-  $(find slides -name '*.md' -print | sed 's|^|/data/|') \
-    --defaults /opt/pandoc/defaults/beamer.yaml \
-    --metadata-file=/data/config/config.yaml \
-    -o /data/output/presentation.pdf
+  --entrypoint=/bin/sh \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
 
 ##### Windows
@@ -224,39 +251,22 @@ docker run --rm \
 ```powershell
 docker run --rm `
   -v "${PWD}:/data" `
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest `
-  $(Get-ChildItem slides -Filter *.md -Recurse | ForEach-Object { "/data/" + $_.FullName.Substring($PWD.Path.Length + 1).Replace('\','/') }) `
-  --defaults /opt/pandoc/defaults/beamer.yaml `
-  --metadata-file=/data/config/config.yaml `
-  -o /data/output/presentation.pdf
+  --entrypoint=/bin/sh `
+  pandoc-beamer:local `
+  -c "/data/buildPDF"
 ```
 
 ### Override Metadata
 
 ```bash
 docker run --rm \
-  -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  --metadata title="My Custom Title" \
-  /data/slides/Example.md \
-  -o /data/output/presentation.pdf
-```
-
-### Python Build Helper
-
-For complex builds with metadata overrides:
-
-```bash
-docker run --rm \
-  -v $(pwd):/data \
-  --user root \
-  --entrypoint python3 \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  -e METADATA_OVERRIDES="title=My Custom Title" \
   pandoc-beamer:local \
-  /opt/pandoc/scripts/build_beamer.py \
-  --input /data/slides/YourPresentation.md \
-  --output /data/output/YourPresentation.pdf \
-  --metadata footerbadge=CONFIDENTIAL
+  -c "/data/buildPDF"
 ```
 
 ### Custom Defaults File
@@ -272,11 +282,14 @@ metadata:
 Run with:
 
 ```bash
-docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
-  --defaults /opt/pandoc/defaults/beamer.yaml \
-  --defaults /data/config/custom.yaml \
-  /data/slides/YourPresentation.md \
-  -o /data/output/YourPresentation.pdf
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/YourPresentation.md \
+  -e OUTPUT_FILE=/data/output/YourPresentation.pdf \
+  -e DEFAULTS_FILE=/data/config/custom.yaml \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
 
 ---
@@ -286,16 +299,19 @@ docker run --rm -v $(pwd):/data --user root pandoc-beamer:local \
 Test the containerized workflow:
 
 ```bash
-chmod +x scripts/verify-container-workflow.sh
-./scripts/verify-container-workflow.sh
+docker build -f docker/Dockerfile.beamer -t pandoc-beamer:local .
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  pandoc-beamer:local \
+  -c "/data/buildPDF"
 ```
 
-This script verifies:
+This verifies:
 
 - Docker image builds correctly
-- All templates render successfully
-- Python helper works with metadata overrides
-- Baked resources are accessible in container
+- `buildPDF` executes successfully
+- A PDF is generated in `output/`
 
 ---
 
@@ -311,6 +327,17 @@ This script verifies:
 
 3. **Permission Denied in Container**
    - Use `--user root` for volume-mounted outputs
+
+4. **Windows: `file not found` when running scripts**
+
+- Ensure line endings are LF for shell scripts
+- Run: `git add --renormalize .`
+- Then commit the normalized files (`.gitattributes` is already configured)
+
+1. **`/data/buildPDF: not found` in container**
+
+- Ensure `buildPDF` exists in project root
+- Ensure it is executable: `chmod +x buildPDF`
 
 See [info/help.md](info/help.md) for comprehensive troubleshooting guide.
 
@@ -335,11 +362,7 @@ See [info/help.md](info/help.md) for comprehensive troubleshooting guide.
 
 ## [+] Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run verification tests
-5. Submit a merge request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full instructions.
 
 ---
 
@@ -358,4 +381,4 @@ This project is licensed under the MIT License. See LICENSE for details.
 
 ---
 
-***Last updated: January 2026***
+***Last updated: March 2026***

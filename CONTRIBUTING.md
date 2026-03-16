@@ -1,69 +1,97 @@
 # Contributing to Pandoc Presentation Creator
 
-Vielen Dank für Ihr Interesse, zu diesem Projekt beizutragen!
+Thanks for contributing.
 
-## Wie kann ich beitragen?
+## Ways To Contribute
 
-### Bugs melden
+### Report Bugs
 
-Wenn Sie einen Bug finden:
+Before creating a new issue, check existing issues first:
 
-1. Prüfen Sie, ob der Bug bereits in den [Issues](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/issues) gemeldet wurde
-2. Falls nicht, erstellen Sie ein neues Issue mit:
-   - Klarer Beschreibung des Problems
-   - Schritten zur Reproduktion
-   - Erwartetes vs. tatsächliches Verhalten
-   - Ihrer Umgebung (OS, Pandoc-Version, etc.)
+- <https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/issues>
 
-### Features vorschlagen
+When reporting a bug, include:
 
-Feature-Vorschläge sind willkommen! Erstellen Sie ein Issue mit:
+1. What you expected to happen
+2. What actually happened
+3. Exact commands you ran
+4. OS and Docker version
+5. Relevant logs or error output
 
-- Beschreibung des Features
-- Warum es nützlich wäre
-- Mögliche Implementierung (optional)
+### Propose Features
 
-### Code beitragen
+Open an issue with:
 
-1. **Forken** Sie das Repository
-2. **Erstellen** Sie einen Branch (`git checkout -b feature/amazing-feature`)
-3. **Machen** Sie Ihre Änderungen
-4. **Testen** Sie Ihre Änderungen
-5. **Committen** Sie (`git commit -m 'Add amazing feature'`)
-6. **Pushen** Sie den Branch (`git push origin feature/amazing-feature`)
-7. **Öffnen** Sie einen Merge Request
+1. Problem statement
+2. Proposed solution
+3. Alternatives considered
 
-### Coding Standards
+### Improve Documentation
 
-- Kommentieren Sie Ihren Code ausführlich
-- Folgen Sie der bestehenden Struktur
-- Testen Sie alle Änderungen
-- Aktualisieren Sie die Dokumentation
+Docs updates are welcome, especially for:
 
-### Dokumentation verbessern
+1. Build workflow examples
+2. Troubleshooting steps
+3. Onboarding/initialization flow
 
-Dokumentations-Verbesserungen sind immer willkommen:
+## Local Development Workflow
 
-- Tippfehler korrigieren
-- Erklärungen verbessern
-- Neue Beispiele hinzufügen
-- Übersetzungen beitragen
+### 1. Fork and Branch
 
-## Merge Request Prozess
+```bash
+git checkout -b feature/my-change
+```
 
-1. Stellen Sie sicher, dass Ihr Code funktioniert
-2. Aktualisieren Sie die README wenn nötig
-3. Fügen Sie Ihre Änderungen zum CHANGELOG hinzu
-4. Der Merge Request wird von Maintainern geprüft
+### 2. Make Changes
+
+Keep changes focused and avoid unrelated refactors.
+
+### 3. Verify Build Workflow
+
+Use the same workflow documented for users:
+
+```bash
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+docker run --rm \
+   -v "$(pwd):/data" \
+   --entrypoint=/bin/sh \
+   registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+   -c "/data/buildPDF"
+```
+
+Confirm a PDF is generated under `output/`.
+
+### 4. Verify VS Code Task (Optional)
+
+Run the default build task in VS Code (`Ctrl+Shift+B`) and ensure it produces a PDF.
+
+### 5. Update Documentation
+
+If behavior changed, update affected docs in the same PR:
+
+1. `README.md`
+2. `templates/HELP.md.template`
+3. Docker readmes when image behavior changed
+
+## Contribution Rules
+
+1. Keep scripts shell-compatible on Linux
+2. Keep shell scripts LF-terminated (`.gitattributes` handles this)
+3. Preserve existing project structure unless change requires otherwise
+4. Document user-facing changes
+
+## Merge Request Checklist
+
+1. Build succeeds locally
+2. Output PDF generation verified
+3. Docs updated for changed behavior
+4. Clear MR description with scope and testing notes
 
 ## Code of Conduct
 
-- Seien Sie respektvoll und konstruktiv
-- Akzeptieren Sie unterschiedliche Meinungen
-- Fokus auf das Beste für die Community
+1. Be respectful and constructive
+2. Focus on technical quality and collaboration
 
-## Fragen?
+## Questions
 
-Bei Fragen erstellen Sie ein Issue oder kontaktieren Sie die Maintainer.
-
-Vielen Dank für Ihre Beiträge!
+Open an issue in the repository or contact the maintainer.

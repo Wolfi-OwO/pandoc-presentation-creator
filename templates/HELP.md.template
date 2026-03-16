@@ -1,0 +1,162 @@
+# Quick Start Guide
+
+## Initialize Project
+
+Initialize from repository root:
+
+```bash
+bash init.sh
+```
+
+The initializer asks for a few simple values and creates `buildPDF` in project root.
+
+## Build Your Presentation
+
+Build the image once:
+
+```bash
+docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+```
+
+Run this command to build your slides:
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+## Output
+
+Your presentation will be generated as: `output/presentation.pdf`
+
+## Editing
+
+1. **Edit content**: Modify `slides/Example.md` with your content
+2. **Change settings**: Update `config/config.yaml` (theme, metadata, etc.)
+3. **Rebuild**: Run the build command above
+
+## Available Docker Images
+
+- `registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest` - For PDF (Beamer) output
+- `pandoc-revealjs:latest` - For HTML (Reveal.js) output
+
+## Advanced Usage
+
+### Custom Output Name
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/my-presentation.pdf \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+### Multiple Input Files
+
+#### Adding them separately
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/intro.md \
+  -e OUTPUT_FILE=/data/output/full-presentation.pdf \
+  -e DEFAULTS_FILE=/data/config/config_2.yaml \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+Note: `buildPDF` supports one markdown input per run. For merged multi-file output, concatenate files first or run pandoc manually.
+
+#### Using a wildcard
+
+##### Linux
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+##### Windows
+
+```powershell
+docker run --rm `
+  -v "${PWD}:/data" `
+  --entrypoint=/bin/sh `
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest `
+  -c "/data/buildPDF"
+```
+
+### Override Metadata
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  -e METADATA_OVERRIDES="title=My Custom Title" \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+### Add Custom Defaults
+
+Create `config/custom.yaml`:
+
+```yaml
+metadata:
+  title: "My Custom Presentation"
+  institute: "University of Vienna"
+```
+
+Run with:
+
+```bash
+docker run --rm \
+  -v "$(pwd):/data" \
+  --entrypoint=/bin/sh \
+  -e INPUT_FILE=/data/slides/Example.md \
+  -e OUTPUT_FILE=/data/output/presentation.pdf \
+  -e DEFAULTS_FILE=/data/config/custom.yaml \
+  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  -c "/data/buildPDF"
+```
+
+### Useful Script Options
+
+- `INPUT_FILE`: markdown input path inside container (default: `/data/slides/Minimalist.md`)
+- `OUTPUT_FILE`: output PDF path inside container (default: `/data/output/presentation.pdf`)
+- `METADATA_FILE`: metadata/defaults YAML path (default: `/data/config/config.yaml`)
+- `DEFAULTS_FILE`: additional defaults YAML path
+- `METADATA_OVERRIDES`: space-separated `key=value` pairs
+- `PDF_ENGINE`: optional PDF engine override
+
+### Windows Note (`file not found`)
+
+If scripts fail on Windows with `file not found`, normalize line endings:
+
+```bash
+git add --renormalize .
+```
+
+Then commit changes. `.gitattributes` already enforces LF for shell scripts.
+
+## Contributing
+
+If you modify build behavior, also update:
+
+1. `README.md`
+2. `templates/HELP.md.template`
+3. `CONTRIBUTING.md`
