@@ -3,7 +3,6 @@ stages:
   - build
   - scan_and_test
   - push_image
-  - cleanup
   - release
 
 variables:
@@ -18,11 +17,6 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
 
-  # Optional external image handoff via Azure Blob Storage
-  # Set USE_AZURE_BLOB_CACHE=true and configure the AZURE_* variables in GitLab CI/CD settings.
-  USE_AZURE_BLOB_CACHE: "false"
-  AZURE_BLOB_NAME: "pandoc-image-${CI_PIPELINE_ID}.tar"
-
 include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
 
@@ -31,6 +25,25 @@ workflow:
     - if: "$CI_COMMIT_TAG =~ $TAG_REGEX"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - when: never
+
+# --------------------
+# Shared Templates
+# --------------------
+.docker_dind_base:
+  image: docker:24
+  services:
+    - docker:24-dind
+
+.main_branch_rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - when: never
+
+.tag_rules:
+  rules:
+    - if: "$CI_COMMIT_TAG =~ $TAG_REGEX"
     - when: never
 
 # --------------------
@@ -86,36 +99,76 @@ dependency_scanning:
   stage: scan_and_test
 
 # --------------------
-# Build Docker Image
+# Fast Path (Main/MR)
+# --------------------
+build_and_test:
+  stage: build
+  extends:
+    - .docker_dind_base
+    - .main_branch_rules
+  script:
+    - |
+      IMAGE_VERSION="$CI_COMMIT_SHORT_SHA"
+
+      docker build \
+        --build-arg VERSION="$IMAGE_VERSION" \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --build-arg VCS_REF="$CI_COMMIT_SHA" \
+        --build-arg VCS_URL="$CI_PROJECT_URL" \
+        -t "pandoc-beamer:local" \
+        -f docker/Dockerfile.beamer .
+
+      docker run --rm pandoc-beamer:local --version
+      docker run --rm --entrypoint python3 pandoc-beamer:local --version
+
+      docker run --rm \
+        -v "$CI_PROJECT_DIR:/data" \
+        -e INPUT_FILE="/data/slides/Minimalist.md" \
+        -e OUTPUT_FILE="/data/output/ci-test.pdf" \
+        --entrypoint /bin/sh \
+        pandoc-beamer:local \
+        -c "/data/buildPDF"
+
+      test -f "$CI_PROJECT_DIR/output/ci-test.pdf"
+
+      IGNORE_FILE_ARG=""
+      if [ -f ".trivyignore" ]; then
+        IGNORE_FILE_ARG="--ignorefile .trivyignore"
+      fi
+
+      docker run --rm \
+        -e DOCKER_HOST="$DOCKER_HOST" \
+        -e DOCKER_TLS_VERIFY="$DOCKER_TLS_VERIFY" \
+        -e DOCKER_CERT_PATH="$DOCKER_CERT_PATH" \
+        -v "$DOCKER_CERT_PATH:$DOCKER_CERT_PATH:ro" \
+        -v "$CI_PROJECT_DIR:/work" \
+        -w /work \
+        aquasec/trivy:latest image \
+        --severity CRITICAL,HIGH,MEDIUM \
+        --exit-code 1 \
+        $IGNORE_FILE_ARG \
+        pandoc-beamer:local
+  artifacts:
+    paths:
+      - output/ci-test.pdf
+    expire_in: 7 days
+
+# --------------------
+# Release Path (Tag)
 # --------------------
 build_docker:
   stage: build
-  image: docker:24
-  services:
-    - docker:24-dind
-  rules:
-    - if: "$CI_COMMIT_TAG =~ $TAG_REGEX"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
-    - when: never
+  extends:
+    - .docker_dind_base
+    - .tag_rules
   before_script:
     - |
       echo "$CI_REGISTRY_PASSWORD" | docker login \
         -u "$CI_REGISTRY_USER" \
         --password-stdin "$CI_REGISTRY"
-
   script:
     - |
-      # Use short SHA on branches/MRs; strip v-prefix from tag for releases
-      # so the image label matches the registry tag (e.g. 1.2.3, not v1.2.3)
-      IMAGE_VERSION="$CI_COMMIT_SHORT_SHA"
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        IMAGE_VERSION="${CI_COMMIT_TAG#v}"
-      fi
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        apk add --no-cache curl tar
-      fi
+      IMAGE_VERSION="${CI_COMMIT_TAG#v}"
 
       docker build \
         --build-arg VERSION="$IMAGE_VERSION" \
@@ -126,253 +179,67 @@ build_docker:
         -f docker/Dockerfile.beamer .
 
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
-      if [ "$USE_AZURE_BLOB_CACHE" != "true" ]; then
-        docker tag pandoc-beamer:local "$TEMP_IMAGE"
-        docker push "$TEMP_IMAGE"
-      fi
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
-
-        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
-
-        docker save pandoc-beamer:local -o "$AZURE_BLOB_NAME"
-
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
-        curl --fail --silent --show-error --location \
-          -X PUT \
-          -H "x-ms-blob-type: BlockBlob" \
-          -H "x-ms-version: 2021-12-02" \
-          -H "Content-Type: application/octet-stream" \
-          --data-binary "@$AZURE_BLOB_NAME" \
-          "$BLOB_URL"
-
-        rm -f "$AZURE_BLOB_NAME"
-      fi
-
+      docker tag pandoc-beamer:local "$TEMP_IMAGE"
+      docker push "$TEMP_IMAGE"
   after_script:
     - command -v docker >/dev/null 2>&1 && docker logout "$CI_REGISTRY" || true
 
-# --------------------
-# Container Scanning (Trivy)
-# --------------------
-container_scan:
-  stage: scan_and_test
-  image: docker:24
-  services:
-    - docker:24-dind
-  needs:
-    - build_docker
-  rules:
-    - if: "$CI_COMMIT_TAG =~ $TAG_REGEX"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
-    - when: never
-
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-
-  script:
-    - |
-      TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        apk add --no-cache curl tar
-      fi
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
-
-        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
-
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
-        curl --fail --silent --show-error --location \
-          "$BLOB_URL" \
-          -o "$AZURE_BLOB_NAME"
-
-        docker load -i "$AZURE_BLOB_NAME"
-        rm -f "$AZURE_BLOB_NAME"
-      else
-        docker pull "$TEMP_IMAGE"
-        docker save "$TEMP_IMAGE" -o pandoc-image.tar
-      fi
-
-      IGNORE_FILE_ARG=""
-      if [ -f ".trivyignore" ]; then
-        IGNORE_FILE_ARG="--ignorefile .trivyignore"
-      fi
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        docker save pandoc-beamer:local -o pandoc-image.tar
-      fi
-
-      docker run --rm \
-        -v "$CI_PROJECT_DIR:/work" \
-        -v "$CI_PROJECT_DIR/$TRIVY_CACHE_DIR:/root/.cache/" \
-        -w /work \
-        aquasec/trivy:latest image \
-        --format template --template "@/contrib/gitlab.tpl" \
-        --output gl-container-scanning-report.json \
-        --severity CRITICAL,HIGH,MEDIUM \
-        --exit-code 1 \
-        $IGNORE_FILE_ARG \
-        --input pandoc-image.tar
-
-      rm -f pandoc-image.tar
-
-  after_script:
-    - command -v docker >/dev/null 2>&1 && docker logout "$CI_REGISTRY" || true
-
-  cache:
-    paths:
-      - .trivycache/
-
-  artifacts:
-    when: always
-    reports:
-      container_scanning: gl-container-scanning-report.json
-
-# --------------------
-# Test Docker Image
-# --------------------
 test_docker:
   stage: scan_and_test
-  image: docker:24
-  services:
-    - docker:24-dind
+  extends:
+    - .docker_dind_base
+    - .tag_rules
   needs:
     - build_docker
-  rules:
-    - if: "$CI_COMMIT_TAG =~ $TAG_REGEX"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
-    - when: never
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - |
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+      docker pull "$TEMP_IMAGE"
 
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        apk add --no-cache curl tar
-      fi
+      docker run --rm "$TEMP_IMAGE" --version
+      docker run --rm "$TEMP_IMAGE" --pdf-engine=xelatex --version || true
+      docker run --rm --entrypoint python3 "$TEMP_IMAGE" --version
 
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
-
-        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
-
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
-        curl --fail --silent --show-error --location \
-          "$BLOB_URL" \
-          -o "$AZURE_BLOB_NAME"
-
-        docker load -i "$AZURE_BLOB_NAME"
-        TEST_IMAGE="pandoc-beamer:local"
-        rm -f "$AZURE_BLOB_NAME"
-      else
-        docker pull "$TEMP_IMAGE"
-        TEST_IMAGE="$TEMP_IMAGE"
-      fi
-
-    - docker run --rm "$TEST_IMAGE" --version
-    - docker run --rm "$TEST_IMAGE" --pdf-engine=xelatex --version || true
-    - docker run --rm --entrypoint python3 "$TEST_IMAGE" --version
-
-    - |
       docker run --rm \
         -v "$CI_PROJECT_DIR:/data" \
         -e INPUT_FILE="/data/slides/Minimalist.md" \
         -e OUTPUT_FILE="/data/output/ci-test.pdf" \
         --entrypoint /bin/sh \
-        "$TEST_IMAGE" \
+        "$TEMP_IMAGE" \
         -c "/data/buildPDF"
 
       test -f "$CI_PROJECT_DIR/output/ci-test.pdf"
+  after_script:
+    - command -v docker >/dev/null 2>&1 && docker logout "$CI_REGISTRY" || true
 
-# --------------------
-# Push to Registry
-# --------------------
 push_to_registry:
   stage: push_image
-  image: docker:24
-  services:
-    - docker:24-dind
+  extends:
+    - .docker_dind_base
+    - .tag_rules
   needs:
     - build_docker
     - test_docker
-    - container_scan
-  rules:
-    - if: "$CI_COMMIT_TAG =~ $TAG_REGEX"
-    - when: never
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - |
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        apk add --no-cache curl tar
-      fi
-
-      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
-        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
-        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
-
-        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
-
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
-        curl --fail --silent --show-error --location \
-          "$BLOB_URL" \
-          -o "$AZURE_BLOB_NAME"
-
-        docker load -i "$AZURE_BLOB_NAME"
-        SOURCE_IMAGE="pandoc-beamer:local"
-        rm -f "$AZURE_BLOB_NAME"
-      else
-        docker pull "$TEMP_IMAGE"
-        SOURCE_IMAGE="$TEMP_IMAGE"
-      fi
+      docker pull "$TEMP_IMAGE"
 
       IMAGE_TAG="${CI_COMMIT_TAG#v}"
       IMAGE="$CI_REGISTRY_IMAGE/beamer-full:$IMAGE_TAG"
 
-      docker tag "$SOURCE_IMAGE" "$IMAGE"
-      docker tag "$SOURCE_IMAGE" "$CI_REGISTRY_IMAGE/beamer-full:latest"
+      docker tag "$TEMP_IMAGE" "$IMAGE"
+      docker tag "$TEMP_IMAGE" "$CI_REGISTRY_IMAGE/beamer-full:latest"
 
       docker push "$IMAGE"
       docker push "$CI_REGISTRY_IMAGE/beamer-full:latest"
+  after_script:
+    - command -v docker >/dev/null 2>&1 && docker logout "$CI_REGISTRY" || true
 
-# --------------------
-# Cleanup External Cache
-# --------------------
-cleanup_external_cache:
-  stage: cleanup
-  image: alpine:3.19
-  rules:
-    - if: '$USE_AZURE_BLOB_CACHE == "true" && ($CI_COMMIT_TAG =~ $TAG_REGEX || $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)'
-      when: always
-    - when: never
-  script:
-    - |
-      : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
-      : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
-      : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
-
-      apk add --no-cache curl tar
-
-      AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
-
-      BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
-      curl --silent --show-error --location \
-        -X DELETE \
-        "$BLOB_URL" \
-        || true
 # --------------------
 # Release
 # --------------------
