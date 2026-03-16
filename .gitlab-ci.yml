@@ -127,7 +127,7 @@ build_and_test:
         -e OUTPUT_FILE="/data/output/ci-test.pdf" \
         --entrypoint /bin/sh \
         pandoc-beamer:local \
-        -c "/data/buildPDF"
+        -c "sh /data/templates/buildPDF.template"
 
       test -f "$CI_PROJECT_DIR/output/ci-test.pdf"
 
@@ -208,7 +208,7 @@ test_docker:
         -e OUTPUT_FILE="/data/output/ci-test.pdf" \
         --entrypoint /bin/sh \
         "$TEMP_IMAGE" \
-        -c "/data/buildPDF"
+        -c "sh /data/templates/buildPDF.template"
 
       test -f "$CI_PROJECT_DIR/output/ci-test.pdf"
   after_script:
