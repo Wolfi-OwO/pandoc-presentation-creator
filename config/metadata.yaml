@@ -1,0 +1,36 @@
+# ------------------------------------------------------------------------------
+# Core Document Metadata
+# ------------------------------------------------------------------------------
+title: "Your Title"
+subtitle: "Your Subtitle"
+author: "Author<s>"
+date: \today
+institute: "Your Organization"
+lang: en-US
+
+# ------------------------------------------------------------------------------
+# Beamer Short Variants (Header/Footer/Navigation)
+# ------------------------------------------------------------------------------
+shorttitle: "Short Title"
+shortauthor: "Author"
+shortinstitute: "Your Org"
+
+# ------------------------------------------------------------------------------
+# PDF Metadata
+# ------------------------------------------------------------------------------
+subject: "Presentation Topic"
+keywords:
+  - pandoc
+  - beamer
+  - presentation
+
+# ------------------------------------------------------------------------------
+# Optional Footer Badge
+# ------------------------------------------------------------------------------
+# Custom key for custom templates/themes
+# footerbadge: "INTERNAL"
+
+# ------------------------------------------------------------------------------
+# Default Footer Behavior in This Project
+# ------------------------------------------------------------------------------
+# left=date, middle=shortauthor/author, right=page x of y

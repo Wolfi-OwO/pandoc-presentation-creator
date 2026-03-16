@@ -178,7 +178,9 @@ prompt_project_configuration() {
     prompt_with_default "Author" "Author Name" AUTHOR
     prompt_with_default "Theme label shown in example slide" "Madrid" THEME
     prompt_with_default "Main slide file name" "Example.md" SLIDE_FILE
-    prompt_with_default "Output PDF file name" "presentation.pdf" OUTPUT_FILE
+    prompt_with_default "Output PDF name (without .pdf)" "documentation" output_name
+
+    OUTPUT_FILE="$output_name.pdf"
 }
 
 create_project_files() {
@@ -211,6 +213,24 @@ create_project_files() {
     else
         print_error "Failed to obtain build.env.template"
         exit 1
+    fi
+
+    if download_or_copy_template "metadata.yaml.template" config/metadata.yaml; then
+        sed -i.bak "s/TITLE_PLACEHOLDER/${TITLE}/g" config/metadata.yaml
+        sed -i.bak "s/AUTHOR_PLACEHOLDER/${AUTHOR}/g" config/metadata.yaml
+        sed -i.bak "s/DATE_PLACEHOLDER/${date_value}/g" config/metadata.yaml
+        rm -f config/metadata.yaml.bak
+        print_success "Created config/metadata.yaml"
+    else
+        cat > config/metadata.yaml <<EOF
+title: "${TITLE}"
+author: "${AUTHOR}"
+date: "${date_value}"
+subtitle: "Presentation Subtitle"
+institute: "My Organization"
+lang: en-US
+EOF
+        print_info "metadata.yaml.template not found in selected template ref; generated config/metadata.yaml fallback"
     fi
 
     print_info "Creating slide templates..."
@@ -276,7 +296,7 @@ echo "Selected image: ${DOCKER_IMAGE}"
 echo ""
 echo "Next steps:"
 echo "1. Edit slides/${SLIDE_FILE}"
-echo "2. Adjust config/config.yaml"
+echo "2. Adjust config/config.yaml and config/metadata.yaml"
 echo "3. Build with:"
 echo "   docker run --rm -v \"\$(pwd):/data\" --entrypoint=/bin/sh ${DOCKER_IMAGE} -c \"/data/buildPDF\""
 echo ""

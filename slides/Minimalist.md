@@ -1,20 +1,20 @@
-# Erste Folie
+# First Slide
 
-Dies ist eine minimale Präsentation.
+This is a minimal presentation.
 
 ---
 
-# Zweite Folie
+# Second Slide
 
-- Punkt 1
-- Punkt 2
-  - Nested Punkt 1
-- Punkt 3
+- Item 1
+- Item 2
+  - Nested item 1
+- Item 3
 
-# Dritte Folie
+# Third Slide
 
 ```bash
-# Präsentation erstellen
+# Build presentation
 pandoc -d defaults/revealjs.yaml examples/minimal.md
 ```
 
@@ -22,6 +22,6 @@ pandoc -d defaults/revealjs.yaml examples/minimal.md
 
 \begin{center}
 \vspace*{\fill}
-{\Huge Vielen Dank für Ihre Aufmerksamkeit}
+{\Huge Thank you for your attention}
 \vspace*{\fill}
 \end{center}

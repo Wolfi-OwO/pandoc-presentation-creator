@@ -1,20 +1,18 @@
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Pandoc Defaults Configuration
-# ==============================================================================
-# Diese Datei definiert die grundlegenden Pandoc-Einstellungen für Präsentationen.
-# Sie kann als Basis-Konfiguration verwendet und bei Bedarf erweitert werden.
+# ------------------------------------------------------------------------------
+# This file defines the core Pandoc settings for presentations.
+# It can be used as a base configuration and extended as needed.
 
 # ------------------------------------------------------------------------------
-# Output-Konfiguration
+# Output Configuration
 # ------------------------------------------------------------------------------
 to: beamer
 standalone: true
 slide-level: 2
 
 # ------------------------------------------------------------------------------
-# Presentation Metadata
+# External Metadata File
 # ------------------------------------------------------------------------------
-title: "Your Title"
-subtitle: "Your Subtitle"
-author: "Author<s>"
-date: \today
+metadata-files:
+  - /data/config/metadata.yaml

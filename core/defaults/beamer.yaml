@@ -1,12 +1,12 @@
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Pandoc Defaults for Beamer Presentations
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # This file defines all standard settings for Beamer presentations.
 # It is optimized for use in the Docker image and is directly included.
 # Usage: pandoc -d defaults/beamer.yaml input.md -o output.pdf
 
 # ------------------------------------------------------------------------------
-# Input-Format
+# Input Format
 # ------------------------------------------------------------------------------
 from: markdown
 
@@ -32,14 +32,14 @@ resource-path:
   - .
 
 # ------------------------------------------------------------------------------
-# Templates & Includes
+# Templates and Includes
 # ------------------------------------------------------------------------------
 template: templates/default_mod.latex
 include-in-header:
   - includes/beamer-preamble.tex
 
 # ------------------------------------------------------------------------------
-# Beamer Theme & Variables
+# Beamer Theme and Variables
 # ------------------------------------------------------------------------------
 variables:
   theme: metropolis
@@ -52,7 +52,7 @@ variables:
   highlight-style: tango
 
 # ------------------------------------------------------------------------------
-# Filter
+# Filters
 # ------------------------------------------------------------------------------
 filters:
   - /opt/pandoc/filters/additional-metadata.lua

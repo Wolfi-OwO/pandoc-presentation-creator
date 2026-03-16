@@ -1,61 +1,79 @@
-# ==============================================================================
-# Gemeinsame Metadata für alle Präsentationen
-# ==============================================================================
-# Diese Datei enthält Metadaten, die für alle Präsentationstypen verwendet werden.
-# Sie wird automatisch in die defaults-Dateien eingebunden.
+# ------------------------------------------------------------------------------
+# Shared Metadata for All Presentations
+# ------------------------------------------------------------------------------
+# This file contains metadata used for all presentation types.
+# It is automatically included in defaults files.
 
 # ------------------------------------------------------------------------------
-# Autor-Informationen
+# Author information
 # ------------------------------------------------------------------------------
 author:
-  - Max Mustermann
+  - Max Example
 
-# Alternative: Mehrere Autoren
+# ------------------------------------------------------------------------------
+# Alternative: Multiple Authors
+# ------------------------------------------------------------------------------
 # author:
 #   - Max Mustermann
 #   - Jane Doe
 
 # ------------------------------------------------------------------------------
-# Titel & Untertitel
+# Title and Subtitle
 # ------------------------------------------------------------------------------
-title: "Beispiel-Präsentation"
-subtitle: "Ein modular aufgebautes Pandoc-Projekt"
+title: "Example Presentation"
+subtitle: "A modular Pandoc project"
 
 # ------------------------------------------------------------------------------
-# Datum
+# Date
 # ------------------------------------------------------------------------------
 date: 2026-01-10
 
-# Alternative: Automatisches Datum
+# ------------------------------------------------------------------------------
+# Alternative: Automatic Date
+# ------------------------------------------------------------------------------
 # date: \today
 
 # ------------------------------------------------------------------------------
-# Institution / Organisation
+# Institution and Organization
 # ------------------------------------------------------------------------------
-institute: "Meine Organisation"
+institute: "My Organization"
 
 # ------------------------------------------------------------------------------
-# Sprache
+# Short Variants for Navigation and Footer (Beamer)
 # ------------------------------------------------------------------------------
-lang: de-DE
+shorttitle: "Short Title"
+shortauthor: "M. Example"
+shortinstitute: "My Org"
 
 # ------------------------------------------------------------------------------
-# Abstrakt / Beschreibung
+# Language
+# ------------------------------------------------------------------------------
+lang: en-US
+
+# ------------------------------------------------------------------------------
+# Abstract and Description
 # ------------------------------------------------------------------------------
 # abstract: |
-#   Eine kurze Zusammenfassung der Präsentation.
-#   Kann mehrere Zeilen umfassen.
+#   A short summary of the presentation.
+#   Can span multiple lines.
 
 # ------------------------------------------------------------------------------
-# Keywords / Schlagwörter
+# Keywords
 # ------------------------------------------------------------------------------
 keywords:
   - Pandoc
-  - Präsentation
+  - Presentation
   - Markdown
 
 # ------------------------------------------------------------------------------
-# Lizenz
+# Footer Note (Default core/includes/beamer-preamble.tex)
+# ------------------------------------------------------------------------------
+# left: date
+# center: shortauthor/author
+# right: page x of y
+
+# ------------------------------------------------------------------------------
+# License
 # ------------------------------------------------------------------------------
 # license: "CC BY-SA 4.0"
 
@@ -65,7 +83,7 @@ keywords:
 # version: "1.0.0"
 
 # ------------------------------------------------------------------------------
-# Kontakt-Informationen
+# Contact Information
 # ------------------------------------------------------------------------------
 # email: "max.mustermann@example.com"
 # website: "https://example.com"

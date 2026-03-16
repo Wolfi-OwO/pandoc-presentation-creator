@@ -1,13 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Pandoc Metadata Configuration",
-  "description": "Schema for Pandoc document metadata YAML files",
+  "description": "Schema for pandoc metadata YAML files",
   "type": "object",
   "properties": {
     "title": {
       "type": "string",
-      "description": "Document title",
-      "default": "Documentation"
+      "description": "Document title"
     },
     "subtitle": {
       "type": "string",
@@ -15,230 +14,124 @@
     },
     "author": {
       "oneOf": [
-        {"type": "string"},
-        {"type": "array", "items": {"type": "string"}}
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
       ],
       "description": "Document author(s)"
     },
     "date": {
       "type": "string",
-      "description": "Document date (leave empty for automatic date)"
+      "description": "Document date"
     },
-    "abstract": {
+    "institute": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ],
+      "description": "Institute/organization shown on title slide in beamer"
+    },
+    "shorttitle": {
       "type": "string",
-      "description": "Document abstract or summary"
+      "description": "Short title for beamer navigation contexts"
     },
-    "keywords": {
-      "type": "array",
-      "items": {"type": "string"},
-      "description": "Document keywords for metadata"
+    "shortauthor": {
+      "type": "string",
+      "description": "Short author for beamer navigation/footer contexts"
+    },
+    "shortinstitute": {
+      "type": "string",
+      "description": "Short institute for beamer navigation contexts"
     },
     "lang": {
       "type": "string",
-      "description": "Document language (e.g., en-US, de-DE, fr-FR)",
       "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
-      "default": "en-US"
+      "description": "Language code, e.g. en-US or de-DE"
     },
-    "documentclass": {
+    "subject": {
       "type": "string",
-      "enum": ["scrartcl", "scrreprt", "scrbook", "article", "report", "book"],
-      "description": "LaTeX document class",
-      "default": "scrartcl"
+      "description": "PDF metadata subject"
     },
-    "classoption": {
+    "keywords": {
       "oneOf": [
-        {"type": "string"},
-        {"type": "array", "items": {"type": "string"}}
+        { "type": "array", "items": { "type": "string" } },
+        { "type": "string" }
       ],
-      "description": "Document class options"
+      "description": "PDF metadata keywords"
     },
-    "mainfont": {
+    "abstract": {
       "type": "string",
-      "description": "Main text font",
-      "default": "Liberation Serif"
+      "description": "Abstract displayed in document"
     },
-    "sansfont": {
+    "event": {
       "type": "string",
-      "description": "Sans-serif font",
-      "default": "Liberation Sans"
+      "description": "Optional event or conference name"
     },
-    "monofont": {
+    "location": {
       "type": "string",
-      "description": "Monospace font for code",
-      "default": "Liberation Mono"
-    },
-    "fontsize": {
-      "type": "string",
-      "pattern": "^\\d+(pt|em|rem)$",
-      "description": "Base font size",
-      "default": "11pt"
-    },
-    "linestretch": {
-      "type": ["string", "number"],
-      "description": "Line spacing multiplier",
-      "default": "1.15"
-    },
-    "papersize": {
-      "type": "string",
-      "enum": ["a4", "a5", "letter", "legal", "executive"],
-      "description": "Paper size",
-      "default": "a4"
-    },
-    "geometry": {
-      "oneOf": [
-        {"type": "string"},
-        {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        {
-          "type": "object",
-          "properties": {
-            "margin": {"type": "string"},
-            "left": {"type": "string"},
-            "right": {"type": "string"},
-            "top": {"type": "string"},
-            "bottom": {"type": "string"}
-          }
-        }
-      ],
-      "description": "Page geometry settings"
-    },
-    "linkcolor": {
-      "type": "string",
-      "description": "Color for internal links",
-      "default": "blue"
-    },
-    "urlcolor": {
-      "type": "string",
-      "description": "Color for external URLs",
-      "default": "blue"
-    },
-    "citecolor": {
-      "type": "string",
-      "description": "Color for citations",
-      "default": "brown"
-    },
-    "toccolor": {
-      "type": "string",
-      "description": "Color for table of contents links",
-      "default": "black"
-    },
-    "toc": {
-      "type": "boolean",
-      "description": "Include table of contents",
-      "default": true
-    },
-    "toc-title": {
-      "type": "string",
-      "description": "Title for table of contents",
-      "default": "Table of Contents"
-    },
-    "toc-depth": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 6,
-      "description": "Depth of table of contents",
-      "default": 3
-    },
-    "lof": {
-      "type": "boolean",
-      "description": "Include list of figures",
-      "default": false
-    },
-    "lot": {
-      "type": "boolean",
-      "description": "Include list of tables",
-      "default": false
-    },
-    "numbersections": {
-      "type": "boolean",
-      "description": "Number sections",
-      "default": true
-    },
-    "secnumdepth": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 6,
-      "description": "Depth of section numbering",
-      "default": 3
+      "description": "Optional event location"
     },
     "logo": {
       "type": "string",
       "description": "Path to logo image"
     },
-    "titlepage": {
+    "titlegraphic": {
+      "type": "string",
+      "description": "Path to title slide image"
+    },
+    "toc": {
       "type": "boolean",
-      "description": "Create a title page",
-      "default": false
+      "description": "Include table of contents slide/section"
+    },
+    "toc-title": {
+      "type": "string",
+      "description": "Table of contents title"
+    },
+    "toc-depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6,
+      "description": "Depth for generated table of contents"
+    },
+    "footerbadge": {
+      "type": "string",
+      "description": "Optional custom key for custom footer badge implementations"
     },
     "header-left": {
       "type": "string",
-      "description": "Left header text"
+      "description": "Compatibility key for custom templates (not used by default core preamble)"
     },
     "header-center": {
       "type": "string",
-      "description": "Center header text"
+      "description": "Compatibility key for custom templates (not used by default core preamble)"
     },
     "header-right": {
       "type": "string",
-      "description": "Right header text"
+      "description": "Compatibility key for custom templates (not used by default core preamble)"
     },
     "footer-left": {
       "type": "string",
-      "description": "Left footer text"
+      "description": "Compatibility key for custom templates (default core footer left is date)"
     },
     "footer-center": {
       "type": "string",
-      "description": "Center footer text"
+      "description": "Compatibility key for custom templates (default core footer center is shortauthor/author)"
     },
     "footer-right": {
       "type": "string",
-      "description": "Right footer text"
+      "description": "Compatibility key for custom templates (default core footer right is page x of y)"
     },
-    "listings": {
-      "type": "boolean",
-      "description": "Use listings package for code blocks",
-      "default": true
-    },
-    "listings-no-page-break": {
-      "type": "boolean",
-      "description": "Prevent page breaks in code listings"
-    },
-    "code-block-font-size": {
+    "default_meta_file": {
       "type": "string",
-      "description": "Font size for code blocks"
-    },
-    "tables": {
-      "type": "boolean",
-      "description": "Enable table support"
-    },
-    "graphics": {
-      "type": "boolean",
-      "description": "Enable graphics support"
-    },
-    "links-as-notes": {
-      "type": "boolean",
-      "description": "Print URLs as footnotes"
-    },
-    "book": {
-      "type": "boolean",
-      "description": "Book style (two-sided)"
+      "description": "Additional metadata YAML merged by core/filters/additional-metadata.lua"
     },
     "bibliography": {
       "oneOf": [
-        {"type": "string"},
-        {"type": "array", "items": {"type": "string"}}
-      ],
-      "description": "Bibliography file(s)"
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
     },
     "csl": {
-      "type": "string",
-      "description": "Citation style (CSL file)"
-    },
-    "reference-section-title": {
-      "type": "string",
-      "description": "Title for references section"
+      "type": "string"
     }
   },
   "additionalProperties": true

@@ -1,9 +1,13 @@
+# ------------------------------------------------------------------------------
 # Pandoc Defaults Configuration
+# ------------------------------------------------------------------------------
 to: FORMAT_PLACEHOLDER
 standalone: true
 slide-level: 2
 
-# Presentation Metadata
-title: "TITLE_PLACEHOLDER"
-author: "AUTHOR_PLACEHOLDER"
-date: "DATE_PLACEHOLDER"
+# ------------------------------------------------------------------------------
+# Metadata Files
+# ------------------------------------------------------------------------------
+# Use a dedicated metadata file for document fields
+metadata-files:
+  - /data/config/metadata.yaml

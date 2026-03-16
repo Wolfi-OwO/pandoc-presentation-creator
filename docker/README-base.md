@@ -39,7 +39,7 @@ docker run --rm -v $(pwd):/data \
   document.md -o output.html
 ```
 
-## Dokumentation
+## Documentation
 
 Full documentation: <https://gitlab.com/woofi4/public/pandoc-presentation-creator>
 

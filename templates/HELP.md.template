@@ -37,7 +37,7 @@ Your presentation will be generated as: `output/presentation.pdf`
 ## Editing
 
 1. **Edit content**: Modify `slides/Example.md` with your content
-2. **Change settings**: Update `config/config.yaml` (theme, metadata, etc.)
+2. **Change settings**: Update `config/config.yaml` (defaults) and `config/metadata.yaml` (title, author, date, etc.)
 3. **Rebuild**: Run the build command above
 
 ## Available Docker Images
@@ -138,7 +138,7 @@ docker run --rm \
 
 - `INPUT_FILE`: markdown input path inside container (default: `/data/slides/Minimalist.md`)
 - `OUTPUT_FILE`: output PDF path inside container (default: `/data/output/presentation.pdf`)
-- `METADATA_FILE`: metadata/defaults YAML path (default: `/data/config/config.yaml`)
+- `METADATA_FILE`: pandoc defaults YAML path (default: `/data/config/config.yaml`)
 - `DEFAULTS_FILE`: additional defaults YAML path
 - `METADATA_OVERRIDES`: space-separated `key=value` pairs
 - `PDF_ENGINE`: optional PDF engine override

@@ -1,23 +1,23 @@
 ---
-# Dieses Dokument verwendet die Metadaten aus metadata/common.yaml
+# This document uses metadata from metadata/common.yaml
 ---
 
-# Willkommen zur Beispiel-Präsentation
+# Welcome to the Example Presentation
 
-Dies ist die erste Folie einer Beispiel-Präsentation, erstellt mit Pandoc.
-
----
-
-## Über dieses Projekt
-
-- Modulares Pandoc-Setup
-- Unterstützung für mehrere Output-Formate
-- Einfach erweiterbar
-- Best Practices für Dokumentation
+This is the first slide of an example presentation created with Pandoc.
 
 ---
 
-## Unterstützte Formate
+## About This Project
+
+- Modular Pandoc setup
+- Support for multiple output formats
+- Easy to extend
+- Best practices for documentation
+
+---
+
+## Supported Formats
 
 ::: columns
 :::: column
@@ -25,84 +25,84 @@ Dies ist die erste Folie einer Beispiel-Präsentation, erstellt mit Pandoc.
 ### Web
 
 - **Reveal.js**
-- Interaktive HTML-Präsentationen
-- Responsive Design
+- Interactive HTML presentations
+- Responsive design
 ::::
 
 :::: column
 
-### Dokumente
+### Documents
 
 - **Beamer** (PDF)
 - **PowerPoint** (PPTX)
-- Professional Look
+- Professional look
 ::::
 :::
 
 ---
 
-## Code-Beispiele
+## Code Examples
 
 ```python
 def hello_world():
-    """Eine einfache Funktion."""
+    """A simple function."""
     print("Hello, World!")
-    
+
 if __name__ == "__main__":
     hello_world()
 ```
 
 ---
 
-## Wichtige Features
+## Important Features
 
 ::: info
-**Information:** Dieses Projekt nutzt Pandoc defaults files für maximale Flexibilität.
+**Info:** This project uses Pandoc defaults files for maximum flexibility.
 :::
 
 ::: warning
-**Warnung:** Stellen Sie sicher, dass alle Abhängigkeiten installiert sind!
+**Warning:** Make sure all dependencies are installed.
 :::
 
 ::: success
-**Erfolg:** Mit diesem Setup können Sie schnell professionelle Präsentationen erstellen!
+**Success:** With this setup, you can quickly create professional presentations.
 :::
 
 ---
 
-## Listen und Aufzählungen
+## Lists and Bullets
 
-### Vorteile
+### Benefits
 
-1. Markdown-basiert
-2. Wiederverwendbare Komponenten
-3. Versionskontrolle mit Git
-4. Cross-Platform
+1. Markdown-based
+2. Reusable components
+3. Version control with Git
+4. Cross-platform
 
 ### Features
 
 - Templates
 - Filters
-- Metadata-Management
-- Custom Styling
+- Metadata management
+- Custom styling
 
 ---
 
-## Tabellen
+## Tables
 
-| Format    | Output | Komplexität |
-|-----------|--------|-------------|
-| Reveal.js | HTML   | Mittel      |
-| Beamer    | PDF    | Hoch        |
-| PPTX      | PPTX   | Niedrig     |
+| Format    | Output | Complexity |
+|-----------|--------|------------|
+| Reveal.js | HTML   | Medium     |
+| Beamer    | PDF    | High       |
+| PPTX      | PPTX   | Low        |
 
 ---
 
-## Mathematische Formeln
+## Math Formulas
 
-Inline-Formel: $E = mc^2$
+Inline formula: $E = mc^2$
 
-Block-Formel:
+Block formula:
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
@@ -110,83 +110,83 @@ $$
 
 ---
 
-## Bilder
+## Images
 
-![Beispiel-Bild](https://via.placeholder.com/800x400.png?text=Ihr+Bild+hier)
+![Example image](https://via.placeholder.com/800x400.png?text=Your+Image+Here)
 
-*Hinweis: Ersetzen Sie diesen Platzhalter durch Ihr eigenes Bild.*
-
----
-
-## Zitate
-
-> "Die beste Art, die Zukunft vorherzusagen, ist, sie zu gestalten."  
-> — Peter Drucker
+*Note: Replace this placeholder with your own image.*
 
 ---
 
-## Inkrementelle Anzeige
+## Quotes
 
-Punkte werden nacheinander angezeigt:
+> "The best way to predict the future is to create it."
+> - Peter Drucker
+
+---
+
+## Incremental Display
+
+Points are shown one by one:
 
 ::: incremental
 
-- Erster Punkt
-- Zweiter Punkt
-- Dritter Punkt
+- First point
+- Second point
+- Third point
 :::
 
 ---
 
 ## Speaker Notes
 
-Dies ist eine Folie mit Speaker Notes.
+This is a slide with speaker notes.
 
 ::: notes
-Dies sind Notizen für den Sprecher:
+These are speaker notes:
 
-- Wichtigen Punkt betonen
-- Beispiel aus der Praxis nennen
-- Fragen des Publikums zulassen
+- Emphasize key point
+- Give a real-world example
+- Allow audience questions
 :::
 
 ---
 
-## Anpassung
+## Customization
 
-Das Projekt kann leicht angepasst werden:
+The project can be easily customized:
 
-- **Templates**: Eigene Vorlagen hinzufügen
-- **Styles**: CSS/LaTeX anpassen
-- **Filters**: Lua-Filter für Custom-Funktionalität
-- **Metadata**: Zentrale Verwaltung von Informationen
-
----
-
-## Nächste Schritte
-
-1. Repository klonen oder Setup-Script ausführen
-2. Eigene Präsentation in Markdown schreiben
-3. Pandoc mit entsprechendem defaults file ausführen
-4. Ergebnis überprüfen und anpassen
+- **Templates**: Add custom templates
+- **Styles**: Adjust CSS/LaTeX
+- **Filters**: Use Lua filters for custom behavior
+- **Metadata**: Centralized information management
 
 ---
 
-## Danke
+## Next Steps
 
-### Fragen?
+1. Clone the repository or run the setup script
+2. Write your own presentation in Markdown
+3. Run Pandoc with the appropriate defaults file
+4. Review and refine the output
 
-**Kontakt:**  
+---
+
+## Thank You
+
+### Questions?
+
+**Contact:**
 <max.mustermann@example.com>
 
-**Repository:**  
-<https://gitlab.com/woofi4/public/pandoc-presentation-creator>
+**Repository:**
+<https://gitlab.com/woofi4/public/pandoc-presentation-creator\>
 
 ---
 
-## Zusätzliche Ressourcen
+## Additional Resources
 
-- [Pandoc Dokumentation](https://pandoc.org/MANUAL.html)
-- [Reveal.js Dokumentation](https://revealjs.com/)
-- [Beamer Dokumentation](https://ctan.org/pkg/beamer)
+- [Pandoc Documentation](https://pandoc.org/MANUAL.html)
+- [Reveal.js Documentation](https://revealjs.com/)
+- [Beamer Documentation](https://ctan.org/pkg/beamer)
 - [Markdown Guide](https://www.markdownguide.org/)

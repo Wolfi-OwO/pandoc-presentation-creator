@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pandoc Defaults Configuration",
+  "description": "Schema for Pandoc defaults YAML files used with --defaults",
+  "type": "object",
+  "properties": {
+    "from": {
+      "type": "string"
+    },
+    "to": {
+      "type": "string"
+    },
+    "standalone": {
+      "type": "boolean"
+    },
+    "slide-level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "pdf-engine": {
+      "type": "string"
+    },
+    "output-file": {
+      "type": "string"
+    },
+    "data-dir": {
+      "type": "string"
+    },
+    "resource-path": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "template": {
+      "type": "string"
+    },
+    "include-in-header": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "filters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata-files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional YAML metadata files merged by pandoc"
+    },
+    "variables": {
+      "type": "object",
+      "description": "Template variables passed to pandoc"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Inline metadata map"
+    }
+  },
+  "additionalProperties": true
+}

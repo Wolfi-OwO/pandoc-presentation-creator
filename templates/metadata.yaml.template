@@ -1,0 +1,47 @@
+# ------------------------------------------------------------------------------
+# Core Document Metadata
+# ------------------------------------------------------------------------------
+title: "TITLE_PLACEHOLDER"
+subtitle: "Presentation Subtitle"
+author: "AUTHOR_PLACEHOLDER"
+date: "DATE_PLACEHOLDER"
+institute: "My Organization"
+lang: en-US
+
+# ------------------------------------------------------------------------------
+# Beamer Short Variants (Navigation/Footer)
+# ------------------------------------------------------------------------------
+shorttitle: "Short Title"
+shortauthor: "AUTHOR_PLACEHOLDER"
+shortinstitute: "My Org"
+
+# ------------------------------------------------------------------------------
+# PDF Metadata and Discoverability
+# ------------------------------------------------------------------------------
+subject: "Presentation Topic"
+keywords:
+  - pandoc
+  - beamer
+  - presentation
+
+# ------------------------------------------------------------------------------
+# Optional Footer Badge
+# ------------------------------------------------------------------------------
+# Consumed by custom theme setups
+# footerbadge: "INTERNAL"
+
+# ------------------------------------------------------------------------------
+# Default Footer Behavior (core/includes/beamer-preamble.tex)
+# ------------------------------------------------------------------------------
+# - Left: date (\insertshortdate -> set via date)
+# - Middle: author (\insertshortauthor -> set via shortauthor/author)
+# - Right: page x of y (fixed template behavior)
+#
+# The keys footer-left/footer-center/footer-right are currently not used by
+# the default LaTeX preamble and are kept for compatibility/custom extensions.
+
+# ------------------------------------------------------------------------------
+# Optional Metadata Merge File
+# ------------------------------------------------------------------------------
+# Used by core/filters/additional-metadata.lua
+# default_meta_file: /data/config/custom-meta.yaml

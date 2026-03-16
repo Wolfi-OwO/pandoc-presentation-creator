@@ -7,69 +7,69 @@ header-includes: |
   \input{includes/beamer-footer.tex}
 ---
 
-# Willkommen
+# Welcome
 
 ## Oracle Performance Tuning
 
-Eine Einführung in:
+An introduction to:
 
-- Indexierungstechniken
-- Optimierungsmethoden
-- Best Practices
-
----
-
-# Grundlagen
-
-## Was ist Performance Tuning?
-
-> Performance Tuning ist der Prozess, eine Datenbank und deren Abfragen zu optimieren, um schnellere Antwortzeiten und bessere Ressourcennutzung zu erreichen.
-
-### Hauptziele
-
-1. **Reduzierung der Query-Ausführungszeit**
-2. **Minimierung des Speicherverbrauchs**
-3. **Optimale CPU-Auslastung**
-4. **Verbesserung der Benutzer-Erfahrung**
+- Indexing techniques
+- Optimization methods
+- Best practices
 
 ---
 
-# Indexierungstechniken
+# Fundamentals
 
-## Index-Typen in Oracle
+## What is performance tuning?
 
-| Typ | Beschreibung | Anwendungsfall |
+> Performance tuning is the process of optimizing a database and its queries to achieve faster response times and better resource utilization.
+
+### Main goals
+
+1. **Reduce query execution time**
+2. **Minimize memory usage**
+3. **Optimize CPU utilization**
+4. **Improve user experience**
+
+---
+
+# Indexing Techniques
+
+## Oracle index types
+
+| Type | Description | Use case |
 |-----|-------------|---|
-| **B-Tree** | Standardindex | Gleichheit und Range-Abfragen |
-| **Bitmap** | Wenige distinct Werte | Low-Cardinality Spalten |
-| **Hash** | Schnelle Lookups | Nur Gleichheit |
-| **Composite** | Mehrere Spalten | Komplexe Bedingungen |
+| **B-Tree** | Standard index | Equality and range queries |
+| **Bitmap** | Few distinct values | Low-cardinality columns |
+| **Hash** | Fast lookups | Equality only |
+| **Composite** | Multiple columns | Complex conditions |
 
 ---
 
-## Index-Strategie
+## Index strategy
 
 ::: incremental
 
-- Indizes auf Spalten mit WHERE-Bedingungen
-- Foreign Keys indizieren
-- Composite Indizes für häufige Kombinationen
-- Nicht zu viele Indizes pro Tabelle
-- Regelmäßig defragmentieren
+- Create indexes on columns used in WHERE clauses
+- Index foreign keys
+- Use composite indexes for frequent combinations
+- Avoid too many indexes per table
+- Defragment regularly
 :::
 
 ---
 
-# Optimierungsmethoden
+# Optimization Methods
 
-## Query Optimization
+## Query optimization
 
 ```sql
--- Schlecht: Full Table Scan
+-- Bad: Full table scan
 SELECT * FROM employees
 WHERE salary > 50000;
 
--- Besser: Mit Index
+-- Better: With index
 CREATE INDEX idx_salary ON employees(salary);
 SELECT employee_id, name FROM employees
 WHERE salary > 50000;
@@ -77,47 +77,47 @@ WHERE salary > 50000;
 
 ---
 
-## Execution Plan Analyse
+## Execution plan analysis
 
-- `EXPLAIN PLAN FOR` nutzen
-- Autotrace aktivieren
-- Plan-Hash überprüfen
-- Statistics aktuell halten
+- Use `EXPLAIN PLAN FOR`
+- Enable autotrace
+- Check the plan hash
+- Keep statistics up to date
 
 ---
 
-# Praktische Tipps
+# Practical Tips
 
-## Best Practices
+## Best practices
 
-1. **Monitoring**: AWR Reports regelmäßig überprüfen
-2. **Statistiken**: `ANALYZE TABLE` oder `DBMS_STATS.GATHER_TABLE_STATS`
-3. **Partitionierung**: Bei großen Tabellen erwägen
-4. **Hints**: Nur als letztes Mittel nutzen
+1. **Monitoring**: Review AWR reports regularly
+2. **Statistics**: Use `ANALYZE TABLE` or `DBMS_STATS.GATHER_TABLE_STATS`
+3. **Partitioning**: Consider for very large tables
+4. **Hints**: Use only as a last resort
 
 ::: notes
-Diese Punkte sind essentiell für eine stabile und schnelle Datenbank.
-Regelmäßige Wartung ist wichtiger als spontane Optimierungen.
+These points are essential for a stable and fast database.
+Regular maintenance is more important than ad-hoc optimizations.
 :::
 
 ---
 
-# Zusammenfassung
+# Summary
 
-## Wichtigste Erkenntnisse
+## Key takeaways
 
-- Indizes sind mächtig, aber nicht die Lösung für alles
-- Regelmäßiges Monitoring ist essentiell
-- Query-Analyse vor Optimierung
-- Dokumentation und Versionierung
+- Indexes are powerful, but not a universal solution
+- Regular monitoring is essential
+- Analyze queries before optimizing
+- Keep documentation and versioning in place
 
 ---
 
-# Fragen?
+# Questions?
 
-Kontakt: <koflerphillip@outlook.com>
+Contact: <koflerphillip@outlook.com>
 
-Weitere Ressourcen:
+More resources:
 
 - [Oracle Database Documentation](https://docs.oracle.com/)
 - [Oracle Tuning Guide](https://docs.oracle.com/en/database/oracle/oracle-database/21/tgsql/)

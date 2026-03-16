@@ -1,31 +1,30 @@
-# ==============================================================================
-# Pandoc Defaults für PowerPoint (PPTX) Präsentationen
-# ==============================================================================
-# Diese Datei definiert alle Standard-Einstellungen für PPTX-Präsentationen.
-# Sie kann mit: pandoc -d defaults/pptx.yaml input.md -o output.pptx
-# aufgerufen werden.
+# ------------------------------------------------------------------------------
+# Pandoc Defaults for PowerPoint (PPTX) Presentations
+# ------------------------------------------------------------------------------
+# This file defines all default settings for PPTX presentations.
+# It can be used with: pandoc -d defaults/pptx.yaml input.md -o output.pptx
 
 # ------------------------------------------------------------------------------
-# Output-Konfiguration
+# Output Configuration
 # ------------------------------------------------------------------------------
 to: pptx
 output-file: output/presentation.pptx
 
 # ------------------------------------------------------------------------------
-# PowerPoint Spezifische Optionen
+# PowerPoint-Specific Options
 # ------------------------------------------------------------------------------
 variables:
-  # Code-Highlighting
+  # Code highlighting
   highlight-style: pygments
 
 # ------------------------------------------------------------------------------
-# Metadata-Dateien
+# Metadata Files
 # ------------------------------------------------------------------------------
 metadata-files:
   - metadata/common.yaml
 
 # ------------------------------------------------------------------------------
-# Filter
+# Filters
 # ------------------------------------------------------------------------------
 # filters:
 #   - filters/custom-filter.lua
@@ -33,37 +32,40 @@ metadata-files:
 # ------------------------------------------------------------------------------
 # Reference Document (PowerPoint Template)
 # ------------------------------------------------------------------------------
-# Ein bestehendes PPTX-Dokument als Layout-Vorlage verwenden
+# Use an existing PPTX document as a layout template
 # reference-doc: templates/pptx/custom-template.pptx
 
 # ------------------------------------------------------------------------------
-# Markdown-Erweiterungen
+# Markdown Extensions
 # ------------------------------------------------------------------------------
 from: markdown+smart+footnotes+definition_lists+fenced_divs+bracketed_spans
 
 # ------------------------------------------------------------------------------
-# Inhaltsverzeichnis
+# Table of Contents
 # ------------------------------------------------------------------------------
 toc: false
 toc-depth: 2
 
 # ------------------------------------------------------------------------------
-# Weitere Optionen
+# Additional Options
 # ------------------------------------------------------------------------------
-# Ebene der Slides (1 = jede Überschrift H1 wird zu einer Folie)
+# Slide Level (1 = each H1 heading becomes a slide)
 slide-level: 2
 
-# Inkrementelle Listen (jedes Item erscheint einzeln)
+# ------------------------------------------------------------------------------
+# Incremental Lists
+# ------------------------------------------------------------------------------
+# Each item appears one by one
 incremental: false
 
 # ------------------------------------------------------------------------------
-# Bilder
+# Images
 # ------------------------------------------------------------------------------
-# Standardgröße für Bilder (in Zoll)
+# Default image size (in inches)
 # dpi: 96
 
 # ------------------------------------------------------------------------------
-# Notizen
+# Notes
 # ------------------------------------------------------------------------------
-# Speaker Notes werden automatisch in die Notizen-Sektion eingefügt
-# Verwende in Markdown: ::: notes ... :::
+# Speaker notes are automatically added to the notes section
+# Use in Markdown: ::: notes ... :::

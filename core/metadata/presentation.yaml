@@ -1,23 +1,23 @@
-# ==============================================================================
-# Präsentations-spezifische Metadata
-# ==============================================================================
-# Diese Datei kann für spezifische Präsentationen angepasst werden.
-# Sie überschreibt die Werte aus common.yaml
+# ------------------------------------------------------------------------------
+# Presentation-Specific Metadata
+# ------------------------------------------------------------------------------
+# This file can be adjusted for specific presentations.
+# It overrides values from common.yaml.
 
 # ------------------------------------------------------------------------------
-# Beispiel: Überschreiben des Titels
+# Example: Override the Title
 # ------------------------------------------------------------------------------
-title: "Meine spezielle Präsentation"
-subtitle: "Ein Beispiel für projektspezifische Metadaten"
+title: "My custom presentation"
+subtitle: "An example of presentation-specific metadata"
 
 # ------------------------------------------------------------------------------
-# Autor für diese spezifische Präsentation
+# Author for This Specific Presentation
 # ------------------------------------------------------------------------------
 author:
   - Kofler Phillip
 
 # ------------------------------------------------------------------------------
-# Datum
+# Date
 # ------------------------------------------------------------------------------
 date: "2026-01-15"
 
@@ -27,23 +27,27 @@ date: "2026-01-15"
 institute: "5BHIF"
 
 # ------------------------------------------------------------------------------
-# Footer Informationen (für Beamer)
+# Footer Information (for Beamer)
 # ------------------------------------------------------------------------------
-# Linke Seite des Footers
+# Left side of the footer
 shortinstitute: "2026-01-15"
-# Mitte des Footers  
+# Center of the footer
 shorttitle: "Kofler Phillip, 5BHIF"
+shortauthor: "K. Phillip"
+
+# Note about the current footer template (core/includes/beamer-preamble.tex):
+# left = date / center = shortauthor (or author) / right = page x of y
 
 # ------------------------------------------------------------------------------
-# Präsentations-spezifische Informationen
+# Presentation-Specific Information
 # ------------------------------------------------------------------------------
 event: "DevOps Conference 2026"
-location: "Berlin, Deutschland"
+location: "Berlin, Germany"
 
 # ------------------------------------------------------------------------------
-# Notizen für den Sprecher
+# Speaker Notes
 # ------------------------------------------------------------------------------
 # speaker-notes: |
-#   - Wichtige Punkte betonen
-#   - Beispiele zeigen
-#   - Fragen zulassen
+#   - Emphasize key points
+#   - Show examples
+#   - Allow questions

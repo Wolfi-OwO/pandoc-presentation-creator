@@ -19,11 +19,16 @@
 
 
   "yaml.schemas": {
+    ".vscode/schemas/pandoc-defaults.json": [
+      "config/config.yaml",
+      "templates/config.yaml.template",
+      "core/defaults/*.yaml"
+    ],
     ".vscode/schemas/pandoc-metadata.json": [
-      "metadata.yaml",
+      "config/metadata.yaml",
       "templates/metadata.yaml.template",
-      "**/metadata.yaml",
-      "**/defaults/*.yaml"
+      "core/metadata/*.yaml",
+      "**/metadata.yaml"
     ]
   },
   "yaml.format.enable": true,
@@ -34,6 +39,7 @@
   ],
   "files.associations": {
     "metadata.yaml": "yaml",
+    "config.yaml": "yaml",
     "*.yaml.template": "yaml"
   },
 

@@ -1,17 +1,17 @@
 --[[
 ==============================================================================
-Beispiel-Filter: Zwei-Spalten Layout
+Example filter: two-column layout
 ==============================================================================
-Dieser Lua-Filter erstellt ein zweispaltiges Layout.
+This Lua filter creates a two-column layout.
 
-Verwendung in Markdown:
+Usage in Markdown:
 ::: columns
 :::: column
-Linke Spalte
+Left column
 ::::
 
 :::: column
-Rechte Spalte
+Right column
 ::::
 :::
 --]]
@@ -23,7 +23,7 @@ function Div(el)
     elseif FORMAT:match 'latex' then
       local columns = {}
       table.insert(columns, pandoc.RawBlock('latex', '\\begin{columns}'))
-      
+
       for _, item in ipairs(el.content) do
         if item.t == 'Div' and item.classes:includes('column') then
           table.insert(columns, pandoc.RawBlock('latex', '\\begin{column}{0.48\\textwidth}'))
@@ -31,12 +31,12 @@ function Div(el)
           table.insert(columns, pandoc.RawBlock('latex', '\\end{column}'))
         end
       end
-      
+
       table.insert(columns, pandoc.RawBlock('latex', '\\end{columns}'))
       return columns
     end
   end
-  
+
   return el
 end
 
