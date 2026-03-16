@@ -3,6 +3,7 @@ stages:
   - build
   - scan_and_test
   - push_image
+  - cleanup
   - release
 
 variables:
@@ -16,6 +17,11 @@ variables:
   CS_SEVERITY_THRESHOLD: CRITICAL
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
+
+  # Optional external image handoff via Azure Blob Storage
+  # Set USE_AZURE_BLOB_CACHE=true and configure the AZURE_* variables in GitLab CI/CD settings.
+  USE_AZURE_BLOB_CACHE: "false"
+  AZURE_BLOB_NAME: "pandoc-image-${CI_PIPELINE_ID}.tar"
 
 include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
@@ -94,11 +100,9 @@ build_docker:
     - when: never
   before_script:
     - |
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        echo "$CI_REGISTRY_PASSWORD" | docker login \
-          -u "$CI_REGISTRY_USER" \
-          --password-stdin "$CI_REGISTRY"
-      fi
+      echo "$CI_REGISTRY_PASSWORD" | docker login \
+        -u "$CI_REGISTRY_USER" \
+        --password-stdin "$CI_REGISTRY"
 
   script:
     - |
@@ -117,17 +121,32 @@ build_docker:
         -t "pandoc-beamer:local" \
         -f docker/Dockerfile.beamer .
 
-      docker save pandoc-beamer:local \
-        -o pandoc-image.tar
+      TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+      docker tag pandoc-beamer:local "$TEMP_IMAGE"
+      docker push "$TEMP_IMAGE"
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
+
+        docker save pandoc-beamer:local -o "$AZURE_BLOB_NAME"
+
+        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
+        tar -xzf azcopy.tar.gz
+        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
+        chmod +x "$AZCOPY_BIN"
+
+        "$AZCOPY_BIN" copy \
+          "$AZURE_BLOB_NAME" \
+          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
+          --overwrite=true
+
+        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+      fi
 
   after_script:
     - docker logout "$CI_REGISTRY" || true
-
-  artifacts:
-    when: on_success
-    paths:
-      - pandoc-image.tar
-    expire_in: 1 day
 
 # --------------------
 # Container Scanning (Trivy)
@@ -145,11 +164,41 @@ container_scan:
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
     - when: never
 
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
   script:
     - |
+      TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
+
+        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
+        tar -xzf azcopy.tar.gz
+        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
+        chmod +x "$AZCOPY_BIN"
+
+        "$AZCOPY_BIN" copy \
+          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
+          "$AZURE_BLOB_NAME"
+
+        docker load -i "$AZURE_BLOB_NAME"
+        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+      else
+        docker pull "$TEMP_IMAGE"
+        docker save "$TEMP_IMAGE" -o pandoc-image.tar
+      fi
+
       IGNORE_FILE_ARG=""
       if [ -f ".trivyignore" ]; then
         IGNORE_FILE_ARG="--ignorefile .trivyignore"
+      fi
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        docker save pandoc-beamer:local -o pandoc-image.tar
       fi
 
       docker run --rm \
@@ -163,6 +212,11 @@ container_scan:
         --exit-code 1 \
         $IGNORE_FILE_ARG \
         --input pandoc-image.tar
+
+      rm -f pandoc-image.tar
+
+  after_script:
+    - docker logout "$CI_REGISTRY" || true
 
   cache:
     paths:
@@ -190,8 +244,29 @@ test_docker:
     - when: never
   script:
     - |
-      docker load -i pandoc-image.tar
-      TEST_IMAGE="pandoc-beamer:local"
+      TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
+
+        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
+        tar -xzf azcopy.tar.gz
+        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
+        chmod +x "$AZCOPY_BIN"
+
+        "$AZCOPY_BIN" copy \
+          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
+          "$AZURE_BLOB_NAME"
+
+        docker load -i "$AZURE_BLOB_NAME"
+        TEST_IMAGE="pandoc-beamer:local"
+        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+      else
+        docker pull "$TEMP_IMAGE"
+        TEST_IMAGE="$TEMP_IMAGE"
+      fi
 
     - docker run --rm "$TEST_IMAGE" --version
     - docker run --rm "$TEST_IMAGE" --pdf-engine=xelatex --version || true
@@ -207,11 +282,6 @@ test_docker:
         -c "/data/buildPDF"
 
       test -f "$CI_PROJECT_DIR/output/ci-test.pdf"
-
-  artifacts:
-    paths:
-      - output/ci-test.pdf
-    expire_in: 30 days
 
 # --------------------
 # Push to Registry
@@ -232,16 +302,64 @@ push_to_registry:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - |
-      docker load -i pandoc-image.tar
+      TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
+
+      if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
+        : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
+        : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
+
+        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
+        tar -xzf azcopy.tar.gz
+        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
+        chmod +x "$AZCOPY_BIN"
+
+        "$AZCOPY_BIN" copy \
+          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
+          "$AZURE_BLOB_NAME"
+
+        docker load -i "$AZURE_BLOB_NAME"
+        SOURCE_IMAGE="pandoc-beamer:local"
+        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+      else
+        docker pull "$TEMP_IMAGE"
+        SOURCE_IMAGE="$TEMP_IMAGE"
+      fi
 
       IMAGE_TAG="${CI_COMMIT_TAG#v}"
       IMAGE="$CI_REGISTRY_IMAGE/beamer-full:$IMAGE_TAG"
 
-      docker tag pandoc-beamer:local "$IMAGE"
-      docker tag pandoc-beamer:local "$CI_REGISTRY_IMAGE/beamer-full:latest"
+      docker tag "$SOURCE_IMAGE" "$IMAGE"
+      docker tag "$SOURCE_IMAGE" "$CI_REGISTRY_IMAGE/beamer-full:latest"
 
       docker push "$IMAGE"
       docker push "$CI_REGISTRY_IMAGE/beamer-full:latest"
+
+# --------------------
+# Cleanup External Cache
+# --------------------
+cleanup_external_cache:
+  stage: cleanup
+  image: alpine:3.19
+  rules:
+    - if: '$USE_AZURE_BLOB_CACHE == "true" && ($CI_COMMIT_TAG =~ $TAG_REGEX || $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)'
+      when: always
+    - when: never
+  script:
+    - |
+      : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
+      : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
+      : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
+
+      apk add --no-cache curl tar
+      curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
+      tar -xzf azcopy.tar.gz
+      AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
+      chmod +x "$AZCOPY_BIN"
+
+      "$AZCOPY_BIN" remove \
+        "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
+        || true
   after_script:
     - docker logout "$CI_REGISTRY" || true
 
