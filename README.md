@@ -98,8 +98,10 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 ## Example Initialization
 
 ```bash
-cd <your-directory>
-curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
+# Download and run init.sh
+wget https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/raw/main/init.sh
+chmod +x init.sh
+./init.sh build
 ```
 
 The generated `buildPDF` script is the main build entrypoint and is designed to be called from inside the container with `-c "/data/buildPDF"`.
@@ -368,7 +370,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full instructions.
 
 ## [LIC] License
 
-This project is licensed under the MIT License. See LICENSE for details.
+This project is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for details.
 
 ---
 
