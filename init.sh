@@ -5,10 +5,13 @@ set -e
 # Sets up a presentation project and asks for a few simple defaults.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATE_DIR="${SCRIPT_DIR}/templates"
 IMAGE_REGISTRY="registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full"
 DOCKER_IMAGE="${IMAGE_REGISTRY}:latest"
 VERSION="unknown"
+IMAGE_TAG=""
+
+# Repository URL for templates (updated to pinned version after image detection)
+REPO_RAW_URL="https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main/templates"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -59,18 +62,10 @@ prompt_with_default() {
     printf -v "${__resultvar}" '%s' "${input}"
 }
 
-require_template() {
-    local file_name="$1"
-    if [ ! -f "${TEMPLATE_DIR}/${file_name}" ]; then
-        print_error "Missing template: templates/${file_name}"
-        exit 1
-    fi
-}
-
 pull_with_spinner() {
     local image="$1"
     local pid
-    local spin='|/-\\'
+    local spin='|/-\'
     local i=0
 
     docker pull "$image" >/dev/null 2>&1 &
@@ -92,37 +87,88 @@ pull_with_spinner() {
     return 1
 }
 
-resolve_image_version() {
+# Download a template file: first tries the local templates/ directory (repo checkout),
+# then falls back to downloading from the versioned registry URL.
+download_or_copy_template() {
+    local template_name="$1"
+    local destination="$2"
+
+    if [ -f "${SCRIPT_DIR}/templates/${template_name}" ]; then
+        cp "${SCRIPT_DIR}/templates/${template_name}" "${destination}"
+        return 0
+    fi
+
+    if command_exists wget; then
+        wget -q -O "${destination}" "${REPO_RAW_URL}/${template_name}" 2>/dev/null && return 0
+    fi
+
+    if command_exists curl; then
+        curl -sSL -o "${destination}" "${REPO_RAW_URL}/${template_name}" 2>/dev/null && return 0
+    fi
+
+    return 1
+}
+
+check_docker_image() {
+    print_header "Checking Docker Image"
+
     if ! command_exists docker; then
-        print_info "Docker not found. Using default image: ${DOCKER_IMAGE}"
-        return
+        print_error "Docker is not installed"
+        exit 1
     fi
 
-    if is_interactive; then
-        local pull_answer
-        prompt_with_default "Pull latest registry image now? (y/n)" "y" pull_answer
-        if [ "${pull_answer}" = "y" ] || [ "${pull_answer}" = "Y" ]; then
-            print_info "Pulling docker image: ${IMAGE_REGISTRY}:latest"
-            pull_with_spinner "${IMAGE_REGISTRY}:latest" || print_info "Could not pull latest image; using local cache if available."
-        else
-            print_info "Skipping docker pull."
-        fi
+    # Try to pull the latest image
+    print_info "Pulling latest Docker image..."
+    if pull_with_spinner "${IMAGE_REGISTRY}:latest"; then
+        print_success "Docker image pulled successfully"
     else
-        print_info "Pulling docker image: ${IMAGE_REGISTRY}:latest"
-        pull_with_spinner "${IMAGE_REGISTRY}:latest" || print_info "Could not pull latest image; using local cache if available."
+        print_error "Failed to pull Docker image"
+        print_info "Checking for local image..."
+        if ! docker image inspect "${IMAGE_REGISTRY}:latest" >/dev/null 2>&1; then
+            print_error "No local image found either"
+            exit 1
+        fi
+        print_info "Using local image"
     fi
 
-    local image_version
-    image_version="$(docker inspect --format='{{index .Config.Labels "org.opencontainers.image.version"}}' "${IMAGE_REGISTRY}:latest" 2>/dev/null || echo unknown)"
+    # Get version from Docker image label
+    local IMAGE_VERSION
+    IMAGE_VERSION=$(docker inspect --format='{{index .Config.Labels "org.opencontainers.image.version"}}' "${IMAGE_REGISTRY}:latest" 2>/dev/null || echo "unknown")
 
-    if [ -n "${image_version}" ] && [ "${image_version}" != "unknown" ]; then
-        VERSION="${image_version}"
-        DOCKER_IMAGE="${IMAGE_REGISTRY}:${VERSION}"
-        print_success "Resolved image version: ${VERSION}"
+    if [ "${IMAGE_VERSION}" != "unknown" ] && [ -n "${IMAGE_VERSION}" ]; then
+        VERSION="${IMAGE_VERSION}"
+        print_info "Using image version: ${VERSION}"
+    else
+        print_info "Could not determine image version, using default: ${VERSION}"
+    fi
+
+    if [ -n "${VERSION}" ] && [ "${VERSION}" != "unknown" ]; then
+        IMAGE_TAG="${VERSION#v}"
+    else
+        IMAGE_TAG=""
+    fi
+
+    # Pin REPO_RAW_URL to the resolved version so templates always match the image
+    if [ -n "${VERSION}" ] && [ "${VERSION}" != "unknown" ]; then
+        local repo_ref="${VERSION}"
+        if [[ "${VERSION}" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            repo_ref="${VERSION}"
+        elif [[ "${VERSION}" == v* ]]; then
+            repo_ref="${VERSION}"
+        else
+            repo_ref="v${VERSION}"
+        fi
+        REPO_RAW_URL="https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/${repo_ref}/templates"
+        print_info "Using templates from: ${REPO_RAW_URL}"
+    fi
+
+    # Set the full image name with version if available
+    if [ -n "${IMAGE_TAG}" ]; then
+        DOCKER_IMAGE="${IMAGE_REGISTRY}:${IMAGE_TAG}"
     else
         DOCKER_IMAGE="${IMAGE_REGISTRY}:latest"
-        print_info "Could not resolve version label, using: ${DOCKER_IMAGE}"
     fi
+    print_info "Selected image: ${DOCKER_IMAGE}"
 }
 
 prompt_project_configuration() {
@@ -144,58 +190,82 @@ create_project_files() {
     print_success "Directories created"
 
     print_info "Creating configuration files..."
-    cp "${TEMPLATE_DIR}/config.yaml.template" config/config.yaml
-    sed -i.bak "s/FORMAT_PLACEHOLDER/beamer/g" config/config.yaml
-    sed -i.bak "s/TITLE_PLACEHOLDER/${TITLE}/g" config/config.yaml
-    sed -i.bak "s/AUTHOR_PLACEHOLDER/${AUTHOR}/g" config/config.yaml
-    sed -i.bak "s/DATE_PLACEHOLDER/${date_value}/g" config/config.yaml
-    rm -f config/config.yaml.bak
+    if download_or_copy_template "config.yaml.template" config/config.yaml; then
+        sed -i.bak "s/FORMAT_PLACEHOLDER/beamer/g" config/config.yaml
+        sed -i.bak "s/TITLE_PLACEHOLDER/${TITLE}/g" config/config.yaml
+        sed -i.bak "s/AUTHOR_PLACEHOLDER/${AUTHOR}/g" config/config.yaml
+        sed -i.bak "s/DATE_PLACEHOLDER/${date_value}/g" config/config.yaml
+        rm -f config/config.yaml.bak
+        print_success "Created config/config.yaml"
+    else
+        print_error "Failed to obtain config.yaml.template"
+        exit 1
+    fi
 
-    cp "${TEMPLATE_DIR}/build.env.template" config/build.env
-    sed -i.bak "s/FORMAT_PLACEHOLDER/beamer/g" config/build.env
-    sed -i.bak "s/IMAGE_TYPE_PLACEHOLDER/beamer-full/g" config/build.env
-    sed -i.bak "s/OUTPUT_EXT_PLACEHOLDER/pdf/g" config/build.env
-    rm -f config/build.env.bak
-    print_success "Created config/config.yaml and config/build.env"
+    if download_or_copy_template "build.env.template" config/build.env; then
+        sed -i.bak "s/FORMAT_PLACEHOLDER/beamer/g" config/build.env
+        sed -i.bak "s/IMAGE_TYPE_PLACEHOLDER/beamer-full/g" config/build.env
+        sed -i.bak "s/OUTPUT_EXT_PLACEHOLDER/pdf/g" config/build.env
+        rm -f config/build.env.bak
+        print_success "Created config/build.env"
+    else
+        print_error "Failed to obtain build.env.template"
+        exit 1
+    fi
 
     print_info "Creating slide templates..."
-    cp "${TEMPLATE_DIR}/Example.md.template" "slides/${SLIDE_FILE}"
-    sed -i.bak "s/TITLE_PLACEHOLDER/${TITLE}/g" "slides/${SLIDE_FILE}"
-    sed -i.bak "s/AUTHOR_PLACEHOLDER/${AUTHOR}/g" "slides/${SLIDE_FILE}"
-    sed -i.bak "s/THEME_PLACEHOLDER/${THEME}/g" "slides/${SLIDE_FILE}"
-    rm -f "slides/${SLIDE_FILE}.bak"
-
-    if [ -f "${TEMPLATE_DIR}/Themed-Feature.md.template" ]; then
-        cp "${TEMPLATE_DIR}/Themed-Feature.md.template" "slides/Themed-Feature.md"
+    if download_or_copy_template "Example.md.template" "slides/${SLIDE_FILE}"; then
+        sed -i.bak "s/TITLE_PLACEHOLDER/${TITLE}/g" "slides/${SLIDE_FILE}"
+        sed -i.bak "s/AUTHOR_PLACEHOLDER/${AUTHOR}/g" "slides/${SLIDE_FILE}"
+        sed -i.bak "s/THEME_PLACEHOLDER/${THEME}/g" "slides/${SLIDE_FILE}"
+        rm -f "slides/${SLIDE_FILE}.bak"
+        print_success "Created slides/${SLIDE_FILE}"
+    else
+        print_error "Failed to obtain Example.md.template"
+        exit 1
     fi
-    print_success "Created slides/${SLIDE_FILE}"
+
+    if download_or_copy_template "Themed-Feature.md.template" "slides/Themed-Feature.md"; then
+        print_success "Created slides/Themed-Feature.md"
+    fi
 
     print_info "Creating build helper and docs..."
-    cp "${TEMPLATE_DIR}/buildPDF.template" buildPDF
-    sed -i.bak "s#/data/slides/Minimalist.md#/data/slides/${SLIDE_FILE}#g" buildPDF
-    sed -i.bak "s#/data/output/presentation.pdf#/data/output/${OUTPUT_FILE}#g" buildPDF
-    rm -f buildPDF.bak
-    chmod +x buildPDF
-
-    cp "${TEMPLATE_DIR}/HELP.md.template" HELP.md
-    sed -i.bak "s#pandoc-beamer:local#${DOCKER_IMAGE}#g" HELP.md
-    sed -i.bak "s#registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest#${DOCKER_IMAGE}#g" HELP.md
-    rm -f HELP.md.bak
-    if [ -f "${TEMPLATE_DIR}/gitignore.template" ]; then
-        cp "${TEMPLATE_DIR}/gitignore.template" .gitignore
+    if download_or_copy_template "buildPDF.template" buildPDF; then
+        sed -i.bak "s#/data/slides/Minimalist.md#/data/slides/${SLIDE_FILE}#g" buildPDF
+        sed -i.bak "s#/data/output/presentation.pdf#/data/output/${OUTPUT_FILE}#g" buildPDF
+        rm -f buildPDF.bak
+        chmod +x buildPDF
+        print_success "Created buildPDF"
+    else
+        print_error "Failed to obtain buildPDF.template"
+        exit 1
     fi
-    print_success "Created buildPDF, HELP.md and .gitignore"
+
+    if download_or_copy_template "HELP.md.template" HELP.md; then
+        sed -i.bak "s#pandoc-beamer:local#${DOCKER_IMAGE}#g" HELP.md
+        sed -i.bak "s#registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest#${DOCKER_IMAGE}#g" HELP.md
+        rm -f HELP.md.bak
+        print_success "Created HELP.md"
+    else
+        print_error "Failed to obtain HELP.md.template"
+        exit 1
+    fi
+
+    if download_or_copy_template "gitignore.template" .gitignore; then
+        print_success "Created .gitignore"
+    fi
 }
+
+# ─── Main ───────────────────────────────────────────────────────────────────
 
 print_header "Pandoc Presentation Creator"
 
-require_template "config.yaml.template"
-require_template "build.env.template"
-require_template "Example.md.template"
-require_template "HELP.md.template"
-require_template "buildPDF.template"
+check_docker_image
 
-resolve_image_version
+echo ""
+print_info "Version: ${VERSION}"
+echo ""
+
 prompt_project_configuration
 create_project_files
 
@@ -210,3 +280,6 @@ echo "2. Adjust config/config.yaml"
 echo "3. Build with:"
 echo "   docker run --rm -v \"\$(pwd):/data\" --entrypoint=/bin/sh ${DOCKER_IMAGE} -c \"/data/buildPDF\""
 echo ""
+
+# Remove this script after successful setup (mirrors documentation-creator pattern)
+rm -f "${BASH_SOURCE[0]}"
