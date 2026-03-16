@@ -136,17 +136,16 @@ build_docker:
 
         docker save pandoc-beamer:local -o "$AZURE_BLOB_NAME"
 
-        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
-        tar -xzf azcopy.tar.gz
-        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
-        chmod +x "$AZCOPY_BIN"
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        curl --fail --silent --show-error --location \
+          -X PUT \
+          -H "x-ms-blob-type: BlockBlob" \
+          -H "x-ms-version: 2021-12-02" \
+          -H "Content-Type: application/octet-stream" \
+          --data-binary "@$AZURE_BLOB_NAME" \
+          "$BLOB_URL"
 
-        "$AZCOPY_BIN" copy \
-          "$AZURE_BLOB_NAME" \
-          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
-          --overwrite=true
-
-        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+        rm -f "$AZURE_BLOB_NAME"
       fi
 
   after_script:
@@ -184,17 +183,13 @@ container_scan:
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
-        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
-        tar -xzf azcopy.tar.gz
-        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
-        chmod +x "$AZCOPY_BIN"
-
-        "$AZCOPY_BIN" copy \
-          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
-          "$AZURE_BLOB_NAME"
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        curl --fail --silent --show-error --location \
+          "$BLOB_URL" \
+          -o "$AZURE_BLOB_NAME"
 
         docker load -i "$AZURE_BLOB_NAME"
-        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+        rm -f "$AZURE_BLOB_NAME"
       else
         docker pull "$TEMP_IMAGE"
         docker save "$TEMP_IMAGE" -o pandoc-image.tar
@@ -263,18 +258,14 @@ test_docker:
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
-        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
-        tar -xzf azcopy.tar.gz
-        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
-        chmod +x "$AZCOPY_BIN"
-
-        "$AZCOPY_BIN" copy \
-          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
-          "$AZURE_BLOB_NAME"
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        curl --fail --silent --show-error --location \
+          "$BLOB_URL" \
+          -o "$AZURE_BLOB_NAME"
 
         docker load -i "$AZURE_BLOB_NAME"
         TEST_IMAGE="pandoc-beamer:local"
-        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+        rm -f "$AZURE_BLOB_NAME"
       else
         docker pull "$TEMP_IMAGE"
         TEST_IMAGE="$TEMP_IMAGE"
@@ -325,18 +316,14 @@ push_to_registry:
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
-        curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
-        tar -xzf azcopy.tar.gz
-        AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
-        chmod +x "$AZCOPY_BIN"
-
-        "$AZCOPY_BIN" copy \
-          "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
-          "$AZURE_BLOB_NAME"
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        curl --fail --silent --show-error --location \
+          "$BLOB_URL" \
+          -o "$AZURE_BLOB_NAME"
 
         docker load -i "$AZURE_BLOB_NAME"
         SOURCE_IMAGE="pandoc-beamer:local"
-        rm -f "$AZURE_BLOB_NAME" azcopy.tar.gz
+        rm -f "$AZURE_BLOB_NAME"
       else
         docker pull "$TEMP_IMAGE"
         SOURCE_IMAGE="$TEMP_IMAGE"
@@ -368,13 +355,11 @@ cleanup_external_cache:
       : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
       apk add --no-cache curl tar
-      curl -sSL -o azcopy.tar.gz https://aka.ms/downloadazcopy-v10-linux
-      tar -xzf azcopy.tar.gz
-      AZCOPY_BIN="$(find . -type f -name azcopy | head -n1)"
-      chmod +x "$AZCOPY_BIN"
 
-      "$AZCOPY_BIN" remove \
-        "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}" \
+      BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+      curl --silent --show-error --location \
+        -X DELETE \
+        "$BLOB_URL" \
         || true
 # --------------------
 # Release
