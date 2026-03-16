@@ -136,18 +136,20 @@ build_and_test:
         IGNORE_FILE_ARG="--ignorefile .trivyignore"
       fi
 
+      docker save pandoc-beamer:local -o "$CI_PROJECT_DIR/pandoc-beamer-local.tar"
+
       docker run --rm \
-        -e DOCKER_HOST="$DOCKER_HOST" \
-        -e DOCKER_TLS_VERIFY="$DOCKER_TLS_VERIFY" \
-        -e DOCKER_CERT_PATH="$DOCKER_CERT_PATH" \
-        -v "$DOCKER_CERT_PATH:$DOCKER_CERT_PATH:ro" \
         -v "$CI_PROJECT_DIR:/work" \
         -w /work \
         aquasec/trivy:latest image \
+        --input /work/pandoc-beamer-local.tar \
+        --scanners vuln \
         --severity CRITICAL,HIGH,MEDIUM \
         --exit-code 1 \
         $IGNORE_FILE_ARG \
         pandoc-beamer:local
+
+      rm -f "$CI_PROJECT_DIR/pandoc-beamer-local.tar"
   artifacts:
     paths:
       - output/ci-test.pdf
