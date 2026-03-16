@@ -126,17 +126,21 @@ build_docker:
         -f docker/Dockerfile.beamer .
 
       TEMP_IMAGE="$CI_REGISTRY_IMAGE/beamer-full:ci-$CI_PIPELINE_ID"
-      docker tag pandoc-beamer:local "$TEMP_IMAGE"
-      docker push "$TEMP_IMAGE"
+      if [ "$USE_AZURE_BLOB_CACHE" != "true" ]; then
+        docker tag pandoc-beamer:local "$TEMP_IMAGE"
+        docker push "$TEMP_IMAGE"
+      fi
 
       if [ "$USE_AZURE_BLOB_CACHE" = "true" ]; then
         : "${AZURE_STORAGE_ACCOUNT:?AZURE_STORAGE_ACCOUNT is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
+        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
+
         docker save pandoc-beamer:local -o "$AZURE_BLOB_NAME"
 
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
         curl --fail --silent --show-error --location \
           -X PUT \
           -H "x-ms-blob-type: BlockBlob" \
@@ -183,7 +187,9 @@ container_scan:
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
+
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
         curl --fail --silent --show-error --location \
           "$BLOB_URL" \
           -o "$AZURE_BLOB_NAME"
@@ -258,7 +264,9 @@ test_docker:
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
+
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
         curl --fail --silent --show-error --location \
           "$BLOB_URL" \
           -o "$AZURE_BLOB_NAME"
@@ -316,7 +324,9 @@ push_to_registry:
         : "${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required when USE_AZURE_BLOB_CACHE=true}"
         : "${AZURE_STORAGE_SAS:?AZURE_STORAGE_SAS is required when USE_AZURE_BLOB_CACHE=true}"
 
-        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+        AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
+
+        BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
         curl --fail --silent --show-error --location \
           "$BLOB_URL" \
           -o "$AZURE_BLOB_NAME"
@@ -356,7 +366,9 @@ cleanup_external_cache:
 
       apk add --no-cache curl tar
 
-      BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS}"
+      AZURE_STORAGE_SAS_CLEAN="$(printf '%s' "$AZURE_STORAGE_SAS" | tr -d '\r\n' | sed 's/^?//')"
+
+      BLOB_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}/${AZURE_BLOB_NAME}?${AZURE_STORAGE_SAS_CLEAN}"
       curl --silent --show-error --location \
         -X DELETE \
         "$BLOB_URL" \
