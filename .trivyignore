@@ -1,0 +1,8 @@
+# Accepted risk items with no currently available upstream fix in Debian 12 package stream.
+# Revisit periodically and remove entries once fixed packages are available.
+
+# ImageMagick (marked will_not_fix in scan output)
+CVE-2026-25971
+
+# zlib (marked will_not_fix in scan output)
+CVE-2023-45853

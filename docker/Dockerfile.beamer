@@ -10,7 +10,7 @@
 #          --defaults /opt/pandoc/defaults/beamer.yaml /data/slides/example.md -o /data/output/example.pdf
 
 # Stage 1: Pandoc Binary Extractor
-FROM alpine:3.19 AS pandoc-fetcher
+FROM alpine:3.23.3 AS pandoc-fetcher
 ARG PANDOC_VERSION=3.1.11
 RUN apk add --no-cache wget && \
     wget -qO- https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz | \
@@ -41,14 +41,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 COPY --from=pandoc-fetcher /usr/local/bin/pandoc /usr/local/bin/pandoc
 
 ARG INSTALL_DEV_TOOLS=false
+ARG INSTALL_OPTIONAL_UTILS=false
 
 # Install system + LaTeX dependencies in a single layer
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
-    wget \
-    curl \
-    git \
     # Core LaTeX packages
     texlive-latex-base \
     texlive-latex-recommended \
@@ -70,10 +69,6 @@ RUN apt-get update && \
     texlive-extra-utils \
     graphviz \
     ghostscript \
-    imagemagick \
-    poppler-utils \
-    # PDF processing
-    pdftk-java \
     # System tools and utilities
     lua5.3 \
     python3 \
@@ -89,6 +84,9 @@ RUN apt-get update && \
     file \
     less \
     nano \
+        && if [ "$INSTALL_OPTIONAL_UTILS" = "true" ]; then \
+            apt-get install -y --no-install-recommends wget curl git imagemagick poppler-utils pdftk-java; \
+        fi \
     && if [ "$INSTALL_DEV_TOOLS" = "true" ]; then \
       apt-get install -y --no-install-recommends nodejs npm build-essential; \
     fi \
