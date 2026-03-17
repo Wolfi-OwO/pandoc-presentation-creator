@@ -14,7 +14,19 @@ A 100% containerized Pandoc-based presentation system for generating professiona
 ### 1. Initialize a Project (Recommended)
 
 ```bash
-bash init.sh
+# Download and run init.sh
+wget https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main/init.sh
+chmod +x init.sh
+./init.sh build
+```
+
+Or with curl:
+
+```bash
+# Download and run init.sh
+curl -O https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main/init.sh
+chmod +x init.sh
+./init.sh build
 ```
 
 The initializer asks simple questions (title, author, slide filename, output filename) and creates:
