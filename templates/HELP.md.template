@@ -15,7 +15,7 @@ The initializer asks for a few simple values and creates `buildPDF` in project r
 Build the image once:
 
 ```bash
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+docker pull registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest
 ```
 
 Run this command to build your slides:
@@ -26,7 +26,7 @@ docker run --rm \
   --entrypoint=/bin/sh \
   -e INPUT_FILE=/data/slides/Example.md \
   -e OUTPUT_FILE=/data/output/presentation.pdf \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -42,7 +42,7 @@ Your presentation will be generated as: `output/presentation.pdf`
 
 ## Available Docker Images
 
-- `registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest` - For PDF (Beamer) output
+- `registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest` - For PDF (Beamer) output
 - `pandoc-revealjs:latest` - For HTML (Reveal.js) output
 
 ## Advanced Usage
@@ -55,7 +55,7 @@ docker run --rm \
   --entrypoint=/bin/sh \
   -e INPUT_FILE=/data/slides/Example.md \
   -e OUTPUT_FILE=/data/output/my-presentation.pdf \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -70,7 +70,7 @@ docker run --rm \
   -e INPUT_FILE=/data/slides/intro.md \
   -e OUTPUT_FILE=/data/output/full-presentation.pdf \
   -e DEFAULTS_FILE=/data/config/config_2.yaml \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -84,7 +84,7 @@ Note: `buildPDF` supports one markdown input per run. For merged multi-file outp
 docker run --rm \
   -v "$(pwd):/data" \
   --entrypoint=/bin/sh \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -94,7 +94,7 @@ docker run --rm \
 docker run --rm `
   -v "${PWD}:/data" `
   --entrypoint=/bin/sh `
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest `
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest `
   -c "/data/buildPDF"
 ```
 
@@ -107,7 +107,7 @@ docker run --rm \
   -e INPUT_FILE=/data/slides/Example.md \
   -e OUTPUT_FILE=/data/output/presentation.pdf \
   -e METADATA_OVERRIDES="title=My Custom Title" \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -130,7 +130,7 @@ docker run --rm \
   -e INPUT_FILE=/data/slides/Example.md \
   -e OUTPUT_FILE=/data/output/presentation.pdf \
   -e DEFAULTS_FILE=/data/config/custom.yaml \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 

@@ -27,7 +27,7 @@ ARG VCS_URL
 ARG PANDOC_VERSION=3.1.11
 
 LABEL maintainer="koflerphillip@outlook.com"
-LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.source="https://gitlab.com/WoofiOwO/pandoc-presentation-creator"
 LABEL org.opencontainers.image.description="Pandoc with LaTeX/Beamer support for PDF presentations"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${VCS_REF}"

@@ -1,7 +1,7 @@
 # Pandoc Presentation Creator
 
-[![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
-[![latest-release](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/badges/release.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/releases/permalink/latest)
+[![pipeline](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/pipelines)
+[![latest-release](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/badges/release.svg)](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/releases/permalink/latest)
 
 **Maintainer:** Phillip Kofler (<koflerphillip@outlook.com>)
 
@@ -15,7 +15,7 @@ A 100% containerized Pandoc-based presentation system for generating professiona
 
 ```bash
 # Download and run init.sh
-wget https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main/init.sh
+wget https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/raw/main/init.sh
 chmod +x init.sh
 ./init.sh build
 ```
@@ -24,7 +24,7 @@ Or with curl:
 
 ```bash
 # Download and run init.sh
-curl -O https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main/init.sh
+curl -O https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/raw/main/init.sh
 chmod +x init.sh
 ./init.sh build
 ```
@@ -41,13 +41,13 @@ The initializer asks simple questions (title, author, slide filename, output fil
 
 ```bash
 # Pull registry image (or let init.sh pin a specific version)
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+docker pull registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest
 
 # Render PDF
 docker run --rm \
   -v "$(pwd):/data" \
   --entrypoint=/bin/sh \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -77,7 +77,7 @@ docker run --rm \
   -e INPUT_FILE=/data/slides/Example.md \
   -e OUTPUT_FILE=/data/output/my-talk.pdf \
   -e METADATA_OVERRIDES="footerbadge=CONFIDENTIAL" \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -146,7 +146,7 @@ docker run --rm \
   -e INPUT_FILE=/data/slides/YourPresentation.md \
   -e OUTPUT_FILE=/data/output/YourPresentation.pdf \
   -e DEFAULTS_FILE=/data/config/custom.yaml \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -247,7 +247,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 - **Maintainer:** Philip Kofler
 - **Email:** <koflerphillip@outlook.com>
-- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/WoofiOwO/pandoc-presentation-creator)
 - **Issues:** Use GitLab Issues for bug reports and feature requests
 
 ---
