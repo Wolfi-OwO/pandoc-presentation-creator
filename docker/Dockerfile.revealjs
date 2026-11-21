@@ -40,7 +40,7 @@ FROM alpine:3.19
 
 # Metadata
 LABEL maintainer="koflerphillip@outlook.com"
-LABEL org.opencontainers.image.source="https://gitlab.com/woofi4/public/pandoc-presentation-creator"
+LABEL org.opencontainers.image.source="https://gitlab.com/WoofiOwO/pandoc-presentation-creator"
 LABEL org.opencontainers.image.description="Pandoc with Reveal.js support for HTML presentations"
 
 # Copy Pandoc from builder
