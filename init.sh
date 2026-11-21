@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_DIR="${SCRIPT_DIR}/templates"
-IMAGE_REGISTRY="registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full"
+IMAGE_REGISTRY="registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full"
 DOCKER_IMAGE="${IMAGE_REGISTRY}:latest"
 VERSION="unknown"
 
@@ -179,7 +179,7 @@ create_project_files() {
 
     cp "${TEMPLATE_DIR}/HELP.md.template" HELP.md
     sed -i.bak "s#pandoc-beamer:local#${DOCKER_IMAGE}#g" HELP.md
-    sed -i.bak "s#registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest#${DOCKER_IMAGE}#g" HELP.md
+    sed -i.bak "s#registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest#${DOCKER_IMAGE}#g" HELP.md
     rm -f HELP.md.bak
     if [ -f "${TEMPLATE_DIR}/gitignore.template" ]; then
         cp "${TEMPLATE_DIR}/gitignore.template" .gitignore

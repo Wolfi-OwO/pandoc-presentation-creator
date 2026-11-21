@@ -52,7 +52,7 @@ docker run --rm \
 
 ## Documentation
 
-Full documentation: <https://gitlab.com/woofi4/public/pandoc-presentation-creator>
+Full documentation: <https://gitlab.com/WoofiOwO/pandoc-presentation-creator>
 
 ## Tags
 

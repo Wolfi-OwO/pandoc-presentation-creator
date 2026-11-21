@@ -1,7 +1,7 @@
 # Pandoc Presentation Creator
 
-[![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
-[![latest-release](https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/badges/release.svg)](https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/releases/permalink/latest)
+[![pipeline](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/pipelines)
+[![latest-release](https://gitlab.com/WoofiOwO/pandoc-documentation-creator/-/badges/release.svg)](https://gitlab.com/WoofiOwO/pandoc-documentation-creator/-/releases/permalink/latest)
 
 **Maintainer:** Phillip Kofler (<koflerphillip@outlook.com>)
 
@@ -28,13 +28,13 @@ The initializer asks simple questions (title, author, slide filename, output fil
 
 ```bash
 # Pull registry image (or let init.sh pin a specific version)
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+docker pull registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest
 
 # Render PDF via /data/buildPDF (documentation-creator style)
 docker run --rm \
   -v "$(pwd):/data" \
   --entrypoint=/bin/sh \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -53,7 +53,7 @@ docker run --rm \
   --entrypoint=/bin/sh \
   -e INPUT_FILE=/data/slides/Example.md \
   -e OUTPUT_FILE=/data/output/presentation.pdf \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 
 # Merge an additional defaults file and metadata overrides
@@ -64,7 +64,7 @@ docker run --rm \
   -e OUTPUT_FILE=/data/output/presentation.pdf \
   -e DEFAULTS_FILE=/data/config/custom.yaml \
   -e METADATA_OVERRIDES="footerbadge=CONFIDENTIAL" \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
   -c "/data/buildPDF"
 ```
 
@@ -99,7 +99,7 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ```bash
 cd <your-directory>
-curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
+curl -sSL https://gitlab.com/WoofiOwO/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
 ```
 
 The generated `buildPDF` script is the main build entrypoint and is designed to be called from inside the container with `-c "/data/buildPDF"`.
@@ -142,7 +142,7 @@ During initialization, `init.sh` resolves the current image version label and st
 - **PDF:** Generate with:
 
   ```bash
-  docker run --rm -v $(pwd):/data --user root registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+  docker run --rm -v $(pwd):/data --user root registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
     /data/info/help.md -o /data/HELP.pdf \
     --from markdown --to pdf --pdf-engine xelatex -V geometry:margin=2cm --toc
   ```
@@ -376,7 +376,7 @@ This project is licensed under the MIT License. See LICENSE for details.
 
 - **Maintainer:** Philip Kofler
 - **Email:** <koflerphillip@outlook.com>
-- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/WoofiOwO/pandoc-presentation-creator)
 - **Issues:** Use GitLab Issues for bug reports and feature requests
 
 ---
