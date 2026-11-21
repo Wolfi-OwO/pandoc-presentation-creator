@@ -1,7 +1,7 @@
 # Pandoc Presentation Creator
 
-[![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
-[![latest-release](https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/badges/release.svg)](https://gitlab.com/woofi4/public/pandoc-documentation-creator/-/releases/permalink/latest)
+[![pipeline](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/pipelines)
+[![latest-release](https://gitlab.com/WoofiOwO/pandoc-documentation-creator/-/badges/release.svg)](https://gitlab.com/WoofiOwO/pandoc-documentation-creator/-/releases/permalink/latest)
 
 **Maintainer:** Phillip Kofler (<koflerphillip@outlook.com>)
 
@@ -20,7 +20,7 @@ docker build -f docker/Dockerfile.beamer -t pandoc-beamer:local .
 ### 2. Pull from GitLab Registry (Alternative)
 
 ```bash
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest
+docker pull registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest
 ```
 
 ### 3. Render a Presentation
@@ -39,7 +39,7 @@ docker run --rm \
 docker run --rm \
   -v $(pwd):/data \
   --user root \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   /data/slides/Minimalist.md \
   -o /data/output/presentation.pdf
@@ -76,7 +76,7 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ```bash
 cd <your-directory>
-curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
+curl -sSL https://gitlab.com/WoofiOwO/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
 ```
 
 ## Key Features
@@ -154,7 +154,7 @@ Run this command to build your slides:
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata-file=/data/config/config.yaml \
   /data/slides/Example.md \
@@ -183,7 +183,7 @@ Your presentation will be generated as: `output/presentation.pdf`
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-beamer:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/pandoc-beamer:latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata-file=/data/config/config.yaml \
   /data/slides/Example.md \
@@ -197,7 +197,7 @@ docker run --rm \
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata-file=/data/config/config.yaml \
   --metadata-file=/data/config/config_2.yaml \
@@ -212,7 +212,7 @@ docker run --rm \
 ```bash
 docker run --rm \
   -v "$(pwd):/data" \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest \
   $(find slides -name '*.md' -print | sed 's|^|/data/|') \
     --defaults /opt/pandoc/defaults/beamer.yaml \
     --metadata-file=/data/config/config.yaml \
@@ -224,7 +224,7 @@ docker run --rm \
 ```powershell
 docker run --rm `
   -v "${PWD}:/data" `
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest `
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest `
   $(Get-ChildItem slides -Filter *.md -Recurse | ForEach-Object { "/data/" + $_.FullName.Substring($PWD.Path.Length + 1).Replace('\','/') }) `
   --defaults /opt/pandoc/defaults/beamer.yaml `
   --metadata-file=/data/config/config.yaml `
@@ -236,7 +236,7 @@ docker run --rm `
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata title="My Custom Title" \
   /data/slides/Example.md \
@@ -353,7 +353,7 @@ See LICENSE file for details.
 
 - **Maintainer:** Philip Kofler
 - **Email:** <koflerphillip@outlook.com>
-- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/WoofiOwO/pandoc-presentation-creator)
 - **Issues:** Use GitLab Issues for bug reports and feature requests
 
 ---
