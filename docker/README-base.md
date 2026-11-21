@@ -39,7 +39,7 @@ docker run --rm -v $(pwd):/data \
 
 ## Dokumentation
 
-Vollständige Dokumentation: [GitLab Repository](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+Vollständige Dokumentation: [GitLab Repository](https://gitlab.com/WoofiOwO/pandoc-presentation-creator)
 
 ## Tags
 

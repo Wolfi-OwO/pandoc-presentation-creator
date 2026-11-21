@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-REPO_URL="https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main"
+REPO_URL="https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/raw/main"
 PROJECT_DIR="$(pwd)"
 
 echo -e "${BLUE}--- Pandoc Presentation Project Bootstrap ---${NC}"
@@ -126,7 +126,7 @@ cp "${TEMPLATE_DIR}/gitignore.template" .gitignore
 # Step 8: Pull Docker Image from Registry
 echo ""
 echo "Configuring Docker image from registry..."
-DOCKER_IMAGE="registry.gitlab.com/woofi4/public/pandoc-presentation-creator:${IMAGE_TYPE}-latest"
+DOCKER_IMAGE="registry.gitlab.com/woofiowo/pandoc-presentation-creator:${IMAGE_TYPE}-latest"
 
 if command -v docker &> /dev/null; then
     echo -e "${BLUE}Pulling Docker image from registry...${NC}"

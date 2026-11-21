@@ -1,7 +1,7 @@
 # Pandoc Presentation Creator
 
-[![pipeline](https://gitlab.com/woofi4/public/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/pipelines)
-[![latest-tag](https://img.shields.io/gitlab/v/tag/woofi4/public/pandoc-presentation-creator)](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/tags)
+[![pipeline](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/badges/main/pipeline.svg)](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/pipelines)
+[![latest-tag](https://img.shields.io/gitlab/v/tag/woofi4/public/pandoc-presentation-creator)](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/tags)
 
 **Maintainer:** Phillip Kofler (<koflerphillip@outlook.com>)
 
@@ -20,7 +20,7 @@ docker build -f docker/Dockerfile.beamer -t pandoc-beamer:local .
 ### 2. Pull from GitLab Registry (Alternative)
 
 ```bash
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest
+docker pull registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest
 ```
 
 ### 3. Render a Presentation
@@ -39,7 +39,7 @@ docker run --rm \
 docker run --rm \
   -v $(pwd):/data \
   --user root \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:beamer-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:beamer-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   /data/slides/Minimalist.md \
   -o /data/output/presentation.pdf
@@ -76,7 +76,7 @@ Open project in VS Code and press **Ctrl+Shift+B** to build and render.
 
 ```bash
 cd <your-directory>
-curl -sSL https://gitlab.com/woofi4/public/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
+curl -sSL https://gitlab.com/WoofiOwO/pandoc-presentation-creator/raw/main/init.sh | bash # Initializes the presentation in the current directory
 ```
 
 ## Key Features
@@ -297,7 +297,7 @@ See LICENSE file for details.
 
 - **Maintainer:** Philip Kofler
 - **Email:** <koflerphillip@outlook.com>
-- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/woofi4/public/pandoc-presentation-creator)
+- **Repository:** [GitLab - pandoc-presentation-creator](https://gitlab.com/WoofiOwO/pandoc-presentation-creator)
 - **Issues:** Use GitLab Issues for bug reports and feature requests
 
 ---
