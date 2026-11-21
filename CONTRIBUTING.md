@@ -8,7 +8,7 @@ Vielen Dank für Ihr Interesse, zu diesem Projekt beizutragen!
 
 Wenn Sie einen Bug finden:
 
-1. Prüfen Sie, ob der Bug bereits in den [Issues](https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/issues) gemeldet wurde
+1. Prüfen Sie, ob der Bug bereits in den [Issues](https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/issues) gemeldet wurde
 2. Falls nicht, erstellen Sie ein neues Issue mit:
    - Klarer Beschreibung des Problems
    - Schritten zur Reproduktion
