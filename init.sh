@@ -5,13 +5,13 @@ set -e
 # Sets up a presentation project and asks for a few simple defaults.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_REGISTRY="registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full"
+IMAGE_REGISTRY="registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full"
 DOCKER_IMAGE="${IMAGE_REGISTRY}:latest"
 VERSION="unknown"
 IMAGE_TAG=""
 
 # Repository URL for templates (updated to pinned version after image detection)
-REPO_RAW_URL="https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/main/templates"
+REPO_RAW_URL="https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/raw/main/templates"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -158,7 +158,7 @@ check_docker_image() {
         else
             repo_ref="v${VERSION}"
         fi
-        REPO_RAW_URL="https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/raw/${repo_ref}/templates"
+        REPO_RAW_URL="https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/raw/${repo_ref}/templates"
         print_info "Using templates from: ${REPO_RAW_URL}"
     fi
 
@@ -263,7 +263,7 @@ EOF
 
     if download_or_copy_template "HELP.md.template" HELP.md; then
         sed -i.bak "s#pandoc-beamer:local#${DOCKER_IMAGE}#g" HELP.md
-        sed -i.bak "s#registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest#${DOCKER_IMAGE}#g" HELP.md
+        sed -i.bak "s#registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest#${DOCKER_IMAGE}#g" HELP.md
         rm -f HELP.md.bak
         print_success "Created HELP.md"
     else

@@ -180,7 +180,7 @@ The project can be easily customized:
 <max.mustermann@example.com>
 
 **Repository:**
-<https://gitlab.com/woofi4/public/pandoc-presentation-creator\>
+<https://gitlab.com/WoofiOwO/pandoc-presentation-creator\>
 
 ---
 

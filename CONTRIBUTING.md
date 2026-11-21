@@ -8,7 +8,7 @@ Thanks for contributing.
 
 Before creating a new issue, check existing issues first:
 
-- <https://gitlab.com/woofi4/public/pandoc-presentation-creator/-/issues>
+- <https://gitlab.com/WoofiOwO/pandoc-presentation-creator/-/issues>
 
 When reporting a bug, include:
 
@@ -51,11 +51,11 @@ Keep changes focused and avoid unrelated refactors.
 Use the same workflow documented for users:
 
 ```bash
-docker pull registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest
+docker pull registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest
 docker run --rm \
    -v "$(pwd):/data" \
    --entrypoint=/bin/sh \
-   registry.gitlab.com/woofi4/public/pandoc-presentation-creator/beamer-full:latest \
+   registry.gitlab.com/woofiowo/pandoc-presentation-creator/beamer-full:latest \
    -c "/data/buildPDF"
 ```
 
