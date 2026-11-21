@@ -7,7 +7,7 @@ Run this command to build your slides:
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata-file=/data/config/config.yaml \
   /data/slides/Example.md \
@@ -35,7 +35,7 @@ Your presentation will be generated as: `output/presentation.OUTPUT_EXT_PLACEHOL
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator/pandoc-IMAGE_TYPE_PLACEHOLDER:latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator/pandoc-IMAGE_TYPE_PLACEHOLDER:latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata-file=/data/config/config.yaml \
   /data/slides/Example.md \
@@ -46,7 +46,7 @@ docker run --rm \
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata-file=/data/config/config.yaml \
   --metadata-file=/data/config/config_2.yaml \
@@ -58,7 +58,7 @@ docker run --rm \
 ```bash
 docker run --rm \
   -v $(pwd):/data \
-  registry.gitlab.com/woofi4/public/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
+  registry.gitlab.com/woofiowo/pandoc-presentation-creator:IMAGE_TYPE_PLACEHOLDER-latest \
   --defaults /opt/pandoc/defaults/beamer.yaml \
   --metadata title="My Custom Title" \
   /data/slides/Example.md \
